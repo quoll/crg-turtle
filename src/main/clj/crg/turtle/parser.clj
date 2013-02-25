@@ -4,7 +4,7 @@
   (:import [crg.turtle TtlLexer Parser NodeBuilder]
            [crg.turtle.ast Types]
            [java.io InputStream]
-           [java.util UUID]
+           [java.util UUID Map]
            [java.net URI]))
 
 (def xsd-string (URI. (str Types/XSD_NS "string")))
@@ -18,22 +18,24 @@
     (str (namespace u) \: (name u))
     (str \< u \>)))
 
-(defrecord BlankNode [id])
-(defrecord Literal [lex t lang]
+(defrecord BlankNode [id]
+  Object
+  (toString [_] (str "_:" id)))
+(defrecord Literal [^String lex t ^String lang]
   Object
   (toString [_] (if (contains? #{nil xsd-string :xsd/string} t)
                   (if lang (str \' lex "'@" lang) (str \' lex \'))
                   (str \' lex "'^^" (as-uri t)))))
 
-(defn typed-literal [lex t _] (Literal. lex t nil))
-(defn string-literal [lex _ lang] (if lang (Literal. lex :xsd/string lang) lex))
-(defn long-literal [lex t _] (try
+(defn typed-literal [^String lex t _] (Literal. lex t nil))
+(defn string-literal [^String lex _ lang] (if lang (Literal. lex :xsd/string lang) lex))
+(defn long-literal [^String lex t _] (try
                                (Long/parseLong lex)
                                (catch NumberFormatException _ (Literal. lex t nil))))
-(defn double-literal [lex t _] (try
+(defn double-literal [^String lex t _] (try
                                  (Double/parseDouble lex)
                                  (catch NumberFormatException _ (Literal. lex t nil))))
-(defn boolean-literal [lex _ _] (= lex Types/TRUE))
+(defn boolean-literal [^String lex _ _] (= lex Types/TRUE))
 
 (def literal-fns
   {nil string-literal
@@ -48,16 +50,17 @@
    xsd-dec double-literal
    :xsd/decimal double-literal})
 
-(defn clojure-literal [lex t lang] ((literal-fns t typed-literal) lex t lang))
+(defn clojure-literal [^String lex t ^String lang] ((literal-fns t typed-literal) lex t lang))
 
 (defn blank-node
-  ([] (BlankNode. (str "_:" (UUID/randomUUID))))
-  ([id] (BlankNode. id)))
+  ([] (BlankNode. (UUID/randomUUID)))
+  ([^String id] (BlankNode. (subs id 2))))
 
 (defn iri [i] (URI. i))
-(defn based-iri [i b] (let [u (URI. i)]
-                        (if (.isRelative u) (keyword i) u)))
-(defn full-iri [pm b p l] (if p (if (empty? p) (keyword l) (keyword p l)) (based-iri l b)))
+(defn based-iri [^String i ^String b]
+  (let [^URI u (URI. i)]
+    (if (.isAbsolute u) u (keyword i))))
+(defn full-iri [^Map pm ^String b ^String p ^String l] (if p (if (empty? p) (keyword l) (keyword p l)) (based-iri l b)))
 
 (defn triples-seq
   [^crg.turtle.Parser parser ^crg.turtle.TtlLexer lexer]
