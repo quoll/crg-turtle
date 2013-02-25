@@ -26,9 +26,8 @@
 (defn full-iri [pm b p l] (if p (if (empty? p) (keyword l) (keyword p l)) (based-iri l b)))
 (defn clojure-literal [lex t lang]
   (case t
-    nil (if lang (with-meta lex lang) lex)
+    (nil xsd-string :xsd/string) (if lang (Literal. lex :xsd/string lang) lex)
     (xsd-bool :xsd/boolean) (= lex Types/TRUE)
-    (xsd-string :xsd/string) lex
     (xsd-int :xsd/integer)
       (try
         (Long/parseLong lex)
