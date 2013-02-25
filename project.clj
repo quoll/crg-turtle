@@ -1,4 +1,4 @@
-(defproject org.clojars.quoll/turtle "0.1.0"
+(defproject org.clojars.quoll/turtle "0.1.1-SNAPSHOT"
   :description "Turtle Parser for Clojure"
   :url "https://github.com/quoll/crg-turtle"
   :license {:name "Eclipse Public License"
