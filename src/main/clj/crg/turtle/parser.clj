@@ -13,8 +13,42 @@
 (def xsd-dbl (URI. (str Types/XSD_NS Types/DOUBLE)))
 (def xsd-int (URI. (str Types/XSD_NS Types/INTEGER)))
 
+(defn as-uri [u]
+  (if (keyword? u)
+    (str (namespace u) \: (name u))
+    (str \< u \>)))
+
 (defrecord BlankNode [id])
-(defrecord Literal [lex t lang])
+(defrecord Literal [lex t lang]
+  Object
+  (toString [_] (if (contains? #{nil xsd-string :xsd/string} t)
+                  (if lang (str \' lex "'@" lang) (str \' lex \'))
+                  (str \' lex "'^^" (as-uri t)))))
+
+(defn typed-literal [lex t _] (Literal. lex t nil))
+(defn string-literal [lex _ lang] (if lang (Literal. lex :xsd/string lang) lex))
+(defn long-literal [lex t _] (try
+                               (Long/parseLong lex)
+                               (catch NumberFormatException _ (Literal. lex t nil))))
+(defn double-literal [lex t _] (try
+                                 (Double/parseDouble lex)
+                                 (catch NumberFormatException _ (Literal. lex t nil))))
+(defn boolean-literal [lex _ _] (= lex Types/TRUE))
+
+(def literal-fns
+  {nil string-literal
+   xsd-string string-literal
+   :xsd/string string-literal
+   xsd-bool boolean-literal
+   :xsd/boolean boolean-literal
+   xsd-int long-literal
+   :xsd/integer long-literal
+   xsd-dbl double-literal
+   :xsd/double double-literal
+   xsd-dec double-literal
+   :xsd/decimal double-literal})
+
+(defn clojure-literal [lex t lang] ((literal-fns t typed-literal) lex t lang))
 
 (defn blank-node
   ([] (BlankNode. (str "_:" (UUID/randomUUID))))
@@ -24,19 +58,6 @@
 (defn based-iri [i b] (let [u (URI. i)]
                         (if (.isRelative u) (keyword i) u)))
 (defn full-iri [pm b p l] (if p (if (empty? p) (keyword l) (keyword p l)) (based-iri l b)))
-(defn clojure-literal [lex t lang]
-  (case t
-    (nil xsd-string :xsd/string) (if lang (Literal. lex :xsd/string lang) lex)
-    (xsd-bool :xsd/boolean) (= lex Types/TRUE)
-    (xsd-int :xsd/integer)
-      (try
-        (Long/parseLong lex)
-        (catch NumberFormatException _ (Literal. lex t lang)))
-    (xsd-dbl :xsd/double xsd-dec :xsd/decimal)
-      (try
-        (Double/parseDouble lex)
-        (catch NumberFormatException _ (Literal. lex t lang)))
-    (Literal. lex t lang)))
 
 (defn triples-seq
   [^crg.turtle.Parser parser ^crg.turtle.TtlLexer lexer]
