@@ -16,9 +16,14 @@ the prefix-map from the parser.
 
 ## Installation
 
-Will add to Clojars soon. For now, just build and require crg.turtle.parser.
+Add the following dependency to a leiningen project.clj:
+```clj
+  [org.clojars.quoll/turtle "0.1.0"]
+```
 
 ## Usage
+
+The parser is in crg.turtle.parser.
 
 Calling crg.turtle.parser/create-parser will return a parser object. An object is necessary here
 because parsing is done lazily, and the prefixes are accumulated out of band but can be updated
