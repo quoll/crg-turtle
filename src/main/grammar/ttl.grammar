@@ -10,19 +10,12 @@
 %embed {:
   private String docBase = null;
   private Map<String,String> prefixMap = new HashMap<String,String>();
-  private TripleSink sink;
   private NodeBuilder builder;
   private Types types;
-  private static final Symbol EMPTY = new Symbol(null);
+  private static final Symbol EMPTY = new Symbol(Collections.emptyList());
 
-  public Parser(PrefixedTripleSink sink, NodeBuilder builder) {
-    this((TripleSink)sink, builder);
-    sink.setPrefixMap(prefixMap);
-  }
-
-  public Parser(TripleSink sink, NodeBuilder builder) {
+  public Parser(NodeBuilder builder) {
     this();
-    this.sink = sink;
     this.builder = builder;
     RDF.init(builder, prefixMap);
     types = new Types(builder);
@@ -38,15 +31,15 @@
     prefixMap.put("", docBase);
   }
 
-  Symbol drain(Object s, List<PredicateObjects> pol) {
+  Symbol getTriples(List<Triple> triples, Object s, List<PredicateObjects> pol) {
     for (PredicateObjects po: pol) {
       Object p = po.getPredicate();
       for (Object o: po.getObjects()) {
-        if (o instanceof AstNode) ((AstNode)o).addAsObject(sink, s, p);
-        else sink.triple(s, p, o);
+        if (o instanceof AstNode) ((AstNode)o).addAsObject(triples, s, p);
+        else triples.add(new Triple(s, p, o));
       }
     }
-    return EMPTY;
+    return new Symbol(triples);
   }
 :};
 
@@ -76,22 +69,14 @@
 %typeof predicateObjectList = "List<PredicateObjects>";
 %typeof predicateObjectSemiList = "List<PredicateObjects>";
 %typeof objectList = "List<Object>";
-%typeof collection = "CollectionNode";
 %typeof PrefixedName = "String[]";
 
 %goal document;
 
-/* document = statement*; */
-document = statement.s {:
-             return EMPTY;
-           :}
-           | document.d statement.s {:
-             return EMPTY;
-           :};
+document = statement?;
 
-
-statement = directive
-          | triples DOT;
+statement = directive.d {: return d; :}
+          | triples.t DOT {: return t; :};
 
 directive = prefixID
           | base
@@ -108,20 +93,22 @@ sparqlPrefix = SPARQL_PREFIX PNAME_NS.ns IRI_REF.ref {: prefixMap.put(ns, ref); 
 sparqlBase = SPARQL_BASE IRI_REF.b DOT {: setBase(b); return EMPTY; :};
 
 triples = subject.s predicateObjectList.pol {:
+    List<Triple> t = new ArrayList<Triple>();
     Object subj;
     Object sa = s.value;
     if (sa instanceof AstNode) {
-      ((AstNode)sa).drain(sink);
+      ((AstNode)sa).getTriples(t);
       subj = ((AstNode)sa).getNode();
     } else {
       subj = sa;
     }
-    return drain(subj, pol);
+    return getTriples(t, subj, pol);
   :}
   | blankNodePropertyList.bl predicateObjectList.pol? {:
-    ((PropertyListNode)bl.value).drain(sink);
-    if (pol != null && !pol.isEmpty()) return drain(((PropertyListNode)bl.value).getNode(), pol);
-    return EMPTY;
+    List<Triple> t = new ArrayList<Triple>();
+    ((PropertyListNode)bl.value).getTriples(t);
+    if (pol != null && !pol.isEmpty()) return getTriples(t, ((PropertyListNode)bl.value).getNode(), pol);
+    return new Symbol(t);
   :};
 
 predicateObjectList = predicateObjectSemiList.posl SEMICOLON* {: return _symbol_posl; :};
@@ -178,16 +165,16 @@ literal = RDFLiteral
 blank = BLANK_NODE.b {: return b == null || b.length() == 0 ? new Symbol(builder.newBlank()) : new Symbol(builder.newBlank(b)); :}
       | collection.c {: return c; :};
 
-blankNodePropertyList = START_BLANKNODE_LIST predicateObjectList.l END_BLANKNODE_LIST {: return new Symbol(new PropertyListNode(builder.newBlank(), l)); :};
+blankNodePropertyList = START_BLANKNODE_LIST predicateObjectList.l END_BLANKNODE_LIST {: return new PropertyListNode(builder.newBlank(), l); :};
 
 collection = START_COLLECTION object.ol* END_COLLECTION {: return new CollectionNode(builder, (List<Symbol>)ol.value); :};
 
-RDFLiteral = STRING.s LangType.lt? {:
+RDFLiteral = STRING.s LangOrType.lt? {:
       if (lt.value == null) return new Symbol(builder.newLiteral(s, null, null));
       return new Symbol(builder.newLiteral(s, ((Object[])lt.value)[0], (String)((Object[])lt.value)[1]));
   :};
 
-LangType = LANGTAG.l {: return new Symbol(new Object[] { null, l }); :}
+LangOrType = LANGTAG.l {: return new Symbol(new Object[] { null, l }); :}
          | TYPED_LITERAL_SEPARATOR IRIref.r {: return new Symbol(new Object[] { r.value, null });:};
 
 IRIref = IRI_REF.i        {: return new Symbol(builder.newIri(i, docBase)); :}

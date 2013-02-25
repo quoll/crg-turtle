@@ -18,7 +18,6 @@ import static crg.turtle.Parser.Terminals.*;
 %class TtlLexer
 %extends Scanner
 %public
-%function nextToken
 %type Symbol
 %yylexthrow Scanner.Exception
 %eofval{
@@ -29,6 +28,10 @@ import static crg.turtle.Parser.Terminals.*;
 %column
 
 %{
+  static final Symbol END_OF_STATEMENT = new Symbol(EOF, "end of statement");
+
+  private boolean endOfStatement = false;
+
   StringBuilder string = new StringBuilder();
 
   private Symbol token(short id) {
@@ -49,6 +52,14 @@ import static crg.turtle.Parser.Terminals.*;
 
   public static TtlLexer newLexer(java.io.InputStream i) {
     return new TtlLexer(i);
+  }
+
+  public Symbol nextToken() throws java.io.IOException, Scanner.Exception {
+    if (endOfStatement) {
+      endOfStatement = false;
+      return END_OF_STATEMENT;
+    }
+    return yylex();
   }
 %}
 
@@ -109,7 +120,7 @@ LANGTAG = "@" [a-zA-Z]+ ( "-" [a-zA-Z0-9]+ )*
 TRUE = "true"
 FALSE = "false"
 
-%state STRING1, STRING2, STRING_LONG1, STRING_LONG2
+%state STRING1, STRING2, STRING_LONG1, STRING_LONG2, TEMP_END
 
 %%
 /* keywords */
@@ -124,7 +135,6 @@ FALSE = "false"
   {IRI_REF}                      { return token(IRI_REF, yytext().substring(1, yylength() - 1)); }
   {PNAME_LN}                     { return token(PNAME_LN, yytext()); }
   {PNAME_NS}                     { return token(PNAME_NS, yytext().substring(0, yylength() - 1)); }
-  {DOT}                          { return token(DOT); }
   {COMMA}                        { return token(COMMA); }
   {SEMICOLON}                    { return token(SEMICOLON); }
   {LEFT_BRACKET}                 { return token(START_BLANKNODE_LIST); }
@@ -133,6 +143,8 @@ FALSE = "false"
   {RIGHT_PAREN}                  { return token(END_COLLECTION); }
   {TYPED_LITERAL_SEPARATOR}      { return token(TYPED_LITERAL_SEPARATOR); }
   {A}                            { return token(RDF_TYPE); }
+
+  {DOT}                          { endOfStatement = true; return token(DOT); }
 
   {STRING_DELIM1}                { yybegin(STRING1); string.setLength(0); }
   {STRING_DELIM2}                { yybegin(STRING2); string.setLength(0); }
