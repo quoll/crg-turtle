@@ -19,5 +19,7 @@ public class Triple extends Symbol {
   public Object getSubject() { return s; }
   public Object getPredicate() { return p; }
   public Object getObject() { return o; }
+
+  public String toString() { return "[" + s + " " + p + " " + o + "]"; }
 }
 

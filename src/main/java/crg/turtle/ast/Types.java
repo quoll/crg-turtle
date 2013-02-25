@@ -7,13 +7,13 @@ public class Types {
   public static final String XSD_NS = "http://www.w3.org/2001/XMLSchema#";
   public static final String XSD = "xsd";
 
-  private static final String DECIMAL = "decimal";
-  private static final String DOUBLE = "double";
-  private static final String INTEGER = "integer";
-  private static final String BOOLEAN = "boolean";
+  public static final String DECIMAL = "decimal";
+  public static final String DOUBLE = "double";
+  public static final String INTEGER = "integer";
+  public static final String BOOLEAN = "boolean";
 
-  private static final String TRUE = "true";
-  private static final String FALSE = "false";
+  public static final String TRUE = "true";
+  public static final String FALSE = "false";
 
   // type IRIs
   private Object xsdBool = null;

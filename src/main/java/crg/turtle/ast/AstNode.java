@@ -1,15 +1,16 @@
 package crg.turtle.ast;
 
 import java.util.List;
-import crg.turtle.TripleSink;
 import crg.turtle.NodeBuilder;
 
 public interface AstNode {
   /**
-   * Push all triples into a sink. This is associated with getMore()
-   * but the data goes directly to the sink instead of a data structure.
+   * Retrieves the triples associated with a node. This naturally recurses into the various
+   * structures associated with different node types.
+   * @param triples A list of triples to add to. This list, or a superset of it, should be returned.
+   * @return a list containing everything from triples plus the new triples associated with this node.
    */
-  void drain(TripleSink sink);
+  List<Triple> getTriples(List<Triple> triples);
 
   /**
    * If this node represents more, then get the simple node that this structure
@@ -21,7 +22,11 @@ public interface AstNode {
   /**
    * Tells a node to add itself as the object of a triple, along with any
    * associated triples described by the node.
+   * @param triples The existing triples to add to.
+   * @param s The subject of the triple that this is an object of.
+   * @param p The predicate of the triple that this is an object of.
+   * @return A list containing all of triples, plus the triples associated with this object.
    */
-  void addAsObject(TripleSink sink, Object s, Object p);
+  List<Triple> addAsObject(List<Triple> triples, Object s, Object p);
 
 }

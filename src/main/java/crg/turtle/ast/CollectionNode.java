@@ -1,6 +1,5 @@
 package crg.turtle.ast;
 
-import crg.turtle.TripleSink;
 import crg.turtle.NodeBuilder;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import beaver.Symbol;
 public class CollectionNode extends Symbol implements AstNode {
   private final List<Object> c;
   private Object head;
-  private List<Triple> triples;
+  private List<Triple> _triples;
   private final NodeBuilder builder;
 
   public CollectionNode(NodeBuilder builder, Symbol[] objects) {
@@ -21,18 +20,17 @@ public class CollectionNode extends Symbol implements AstNode {
     c = new ArrayList<Object>();
     this.builder = builder;
     if (objectList != null) for (Symbol o: objectList) c.add(o.value);
-    triples = null;
+    _triples = null;
     head = null;
   }
 
-  public List<Object> getCollection() { return c; }
-
-  public void addAsObject(TripleSink sink, Object s, Object p) {
-    drain(sink);
-    sink.triple(s, p, head);
+  public List<Triple> addAsObject(List<Triple> triples, Object s, Object p) {
+    triples = getTriples(triples);
+    triples.add(new Triple(s, p, head));
+    return triples;
   }
 
-  public void drain(TripleSink sink) {
+  public List<Triple> getTriples(List<Triple> triples) {
     if (head != null) throw new IllegalStateException();
     Object nil = RDF.getNil();
     if (c.size() > 0) {
@@ -40,35 +38,27 @@ public class CollectionNode extends Symbol implements AstNode {
       Object cn = c.get(0);
       Object first = RDF.getFirst();
       Object rest = RDF.getRest();
-      if (cn instanceof AstNode) ((AstNode)cn).addAsObject(sink, head, first);
-      else sink.triple(head, first, cn);
+      if (cn instanceof AstNode) ((AstNode)cn).addAsObject(triples, head, first);
+      else triples.add(new Triple(head, first, cn));
       Object last = head;
       for (int i = 1; i < c.size(); i++) {
         Object n = builder.newBlank();
-        sink.triple(last, rest, n); 
+        triples.add(new Triple(last, rest, n));
         Object li = c.get(i);
-        if (li instanceof AstNode) ((AstNode)li).addAsObject(sink, n, first);
-        else sink.triple(n, first, li);
+        if (li instanceof AstNode) ((AstNode)li).addAsObject(triples, n, first);
+        else triples.add(new Triple(n, first, li));
         last = n;
       }
-      sink.triple(last, rest, nil);
+      triples.add(new Triple(last, rest, nil));
     } else {
       head = nil;
     }
+    return triples;
   }
 
   public Object getNode() {
-    if (head == null) populateTriples();
+    if (head == null) _triples = getTriples(new ArrayList<Triple>());
     return head;
-  }
-
-  private void populateTriples() {
-    triples = new ArrayList<Triple>();
-    drain(new TripleSink() {
-      public void triple(Object s, Object p, Object o) {
-        triples.add(new Triple(s, p, o));
-      }
-    });
   }
 
   public String toString() {
