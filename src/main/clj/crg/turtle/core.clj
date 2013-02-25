@@ -1,4 +1,5 @@
 (ns crg.turtle.core
+  (:use [clojure.java.io :only [input-stream]])
   (:require [crg.turtle.parser :as p])
   (:gen-class))
 
@@ -9,6 +10,7 @@
     (println "Usage: turtle <ttl.file>")
     (System/exit 1))
   (println "Getting: " (first args))
-  (doseq [t (p/load-turtle (first args))]
-    (println t))
+  (with-open [f (input-stream (first args))]
+    (let [t (p/create-parser f)]
+      (println (p/get-triples t))))
   (println "Done"))
