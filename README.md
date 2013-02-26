@@ -3,10 +3,10 @@
 A Turtle loading module for CRG (Clojure RDF Graphs). Meets the standard for the W3C Candidate Recomendation (19 Feb, 2013).
 
 Specifically aimed at parsing for Clojure. To this end, XSD strings (which includes previously
-"untyped" literals) are returned as strings, and doubles and decimals are returned as doubles.
-All other datatypes get returned as a Literal record, which contains the lexical form, the datatype,
-and the language code. As for normal RDF literals, the language code is only available if the
-datatype is a string (no datatype implies a string).
+"untyped" literals) are returned as strings, doubles and decimals are returned as doubles and
+integers are returned as longs. All other datatypes get returned as a Literal record, which
+contains the lexical form, the datatype, and the language code. As for normal RDF literals,
+the language code is only available if the datatype is a string (no datatype implies a string).
 
 Where possible, the parser with return keywords rather than URIs (IRIs are not explicitly handled).
 If a URI is represented as a QName, then it will be converted to a keyword instead of a URI. This
