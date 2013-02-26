@@ -54,6 +54,7 @@ Probably lots.
   * Provide an option to parse to URI instead of always keywords.
   * Provide option to convert URIs to QNames automatically (auto updating the prefixes)
   * Possibly extend Triple to look like a 3 element list. (Is this necessary?)
+  * Reimplement all non-generated Java code in Clojure.
 
 ## License
 
