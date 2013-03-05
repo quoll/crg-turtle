@@ -56,6 +56,11 @@ Probably lots.
   * Possibly extend Triple to look like a 3 element list. (Is this necessary?)
   * Reimplement all non-generated Java code in Clojure.
 
+## Acknowledgements
+
+Special thanks to [Daniel Spiewak](https://github.com/djspiewak "@djspiewak") for advice on parsing
+(especially the trick of terminating JFlex early to convince Beaver to stream a result).
+
 ## License
 
 Copyright © 2013 Paul Gearon
