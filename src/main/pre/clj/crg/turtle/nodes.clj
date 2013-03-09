@@ -14,6 +14,3 @@
     "Creates a literal using a given lexical form, an IRI for the type (may be nil),
      and a language code (only valid if the type indicates xsd:string or nil)"))
 
-(defprotocol MapFactory
-  (new-map [factory] "Creates a persistent map object"))
-
