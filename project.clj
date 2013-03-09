@@ -1,3 +1,4 @@
+;; build with:  lein with-profile precomp compile
 (defproject org.clojars.quoll/turtle "0.1.1-SNAPSHOT"
   :description "Turtle Parser for Clojure"
   :url "https://github.com/quoll/crg-turtle"
@@ -6,10 +7,9 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [net.sf.beaver/beaver-ant "0.9.9"]]
 
-  :plugins [[lein-beaver "0.1.2-SNAPSHOT"]
-            [lein-pprint "1.1.1"]]
+  :plugins [[lein-beaver "0.1.2-SNAPSHOT"]]
 
-  :prep-tasks ["beaver" "javac" "compile"]
+  :prep-tasks ["javac" "compile"]
 
   :source-paths ["src/main/clj"]
   :test-paths ["src/test/clj"]
@@ -17,5 +17,9 @@
 
   :grammar-src-dir "src/main/grammar"
   :grammar-dest-dir "target/src/"
+
+  :profiles { :precomp { :prep-tasks ^:replace ["beaver" "compile"]
+                         :source-paths ["src/main/pre/clj"]
+                         :aot [crg.turtle.nodes] } }
 
   :main crg.turtle.core)
