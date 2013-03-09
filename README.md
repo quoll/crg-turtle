@@ -45,16 +45,24 @@ crg.turtle.parser/get-prefix-map and crg.turtle.parser/get-base resepectively.
     (println triple))))
 ```
 
+### Building
+This project interleaves Clojure and Java compilation steps. To make this happen correctly, lein has to to compile using two different profiles. Once that has been done, the jar can be built:
+
+```bash
+  lein with-profile precomp compile
+  lein uberjar
+```
+
 ### Bugs
 
 Probably lots.
 
 ### TODO
 
-  * Provide an option to parse to URI instead of always keywords.
+  * Reimplement all non-generated Java code in Clojure. (started)
   * Provide option to convert URIs to QNames automatically (auto updating the prefixes)
+  * Provide an option to parse to URI instead of always keywords.
   * Possibly extend Triple to look like a 3 element list. (Is this necessary?)
-  * Reimplement all non-generated Java code in Clojure.
 
 ## Acknowledgements
 
