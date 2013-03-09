@@ -151,7 +151,7 @@ FALSE = "false"
   {STRING_LONG_DELIM1}           { yybegin(STRING_LONG1); string.setLength(0); }
   {STRING_LONG_DELIM2}           { yybegin(STRING_LONG2); string.setLength(0); }
 
-  {LANGTAG}                      { return token(LANGTAG, yytext()); }
+  {LANGTAG}                      { return token(LANGTAG, yytext().substring(1)); }
 
   {INTEGER_POSITIVE}             { return token(INTEGER_LITERAL, yytext().substring(1, yylength() - 1)); }
   {DECIMAL_POSITIVE}             { return token(DECIMAL_LITERAL, yytext().substring(1, yylength() - 1)); }
