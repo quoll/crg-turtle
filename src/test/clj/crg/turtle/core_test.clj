@@ -15,12 +15,11 @@
     (let [s (ByteArrayInputStream. (.getBytes t "UTF-8"))
           parser (create-parser s)
           triple-stream (get-triples parser)
-          base (get-base parser)
-          prefix-map (get-prefix-map parser)]
-      (is (count prefix-map) 0)
+          base (get-base parser)]
+      (is (count (get-prefix-map parser)) 0)
       (let [triples (into [] triple-stream)]
         (is (= (count triples) 6))
-        (is (= (count prefix-map) 1))
+        (is (= (count (get-prefix-map parser)) 2))
         (is (empty? base))
         (is (= (.getSubject (first triples)) :a))
         (is (= (.getPredicate (first triples)) :b))
@@ -33,3 +32,41 @@
           (is (= (.getPredicate f) :g))
           (is (= (.getObject f) 3.0)))
         ))))
+
+(def cpx "@base <http://ex.com/> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/elements/1.1/> .
+@prefix ex: <http://example.org/stuff/1.0/> .
+
+<http://www.w3.org/TR/rdf-syntax-grammar>
+  dc:title \"RDF/XML Syntax Specification (Revised)\" ;
+  ex:editor [
+    ex:fullname \"Dave Beckett\";
+    ex:homePage <http://purl.org/net/dajobe/>;
+    ex: dc:
+  ] .
+
+ex:collection :hasCollection ( :a :b :c ) .
+[ a ex:Foo ; ex:some ex:data ] ex:friend [ a ex:Bar ; ex:contains ( \"some\" \"data\"@en ) ] .
+( :a :b \"foo\" [ a ex:Type , ex:Other ] ( :aa ) ) ex:to ( [ :val 1 ] [ :val 2] [ :val 3] ) .
+
+[ a ex:Foo ;;; ex:some ex:data ] ex:friend [ a ex:Bar ;; ex:contains ( \"some\" \"data\" ) ] .
+ex:collection2 :hasCollection ( :a :b :c ) ; .
+ex:collection3 :hasCollection ( :a :b :c ) ;;; .
+
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+ex:numbers :hasCollection ( 1 2.0 3.0E0 ) .
+")
+
+(deftest structure-test
+  (testing "Tests most triple forms available in Turtle."
+    (let [s (ByteArrayInputStream. (.getBytes cpx "UTF-8"))
+          parser (create-parser s)
+          triple-stream (get-triples parser)
+          base (get-base parser)]
+      (is (count (get-prefix-map parser)) 0)
+      (let [triples (into [] triple-stream)]
+        (is (= (count triples) 75))
+        (is (= (count (get-prefix-map parser)) 5)))))) ; the empty namespace defaults to base
+
