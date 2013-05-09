@@ -4,7 +4,7 @@
   :url "https://github.com/quoll/crg-turtle"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.4.0"]
+  :dependencies [[org.clojure/clojure "1.5.0"]
                  [net.sf.beaver/beaver-ant "0.9.9"]]
 
   :plugins [[lein-beaver "0.1.2-SNAPSHOT"]]

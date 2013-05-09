@@ -1,9 +1,10 @@
 package crg.turtle.ast;
 
-import crg.turtle.NodeBuilder;
+import crg.turtle.nodes.NodeBuilder;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
+import clojure.lang.IPersistentMap;
 import beaver.Symbol;
 
 public class CollectionNode extends Symbol implements AstNode {
@@ -24,28 +25,28 @@ public class CollectionNode extends Symbol implements AstNode {
     head = null;
   }
 
-  public List<Triple> addAsObject(List<Triple> triples, Object s, Object p) {
-    triples = getTriples(triples);
+  public List<Triple> addAsObject(IPersistentMap prefixes, List<Triple> triples, Object s, Object p) {
+    triples = getTriples(prefixes, triples);
     triples.add(new Triple(s, p, head));
     return triples;
   }
 
-  public List<Triple> getTriples(List<Triple> triples) {
+  public List<Triple> getTriples(IPersistentMap prefixes, List<Triple> triples) {
     if (head != null) throw new IllegalStateException();
-    Object nil = RDF.getNil();
+    Object nil = RDF.getNil(prefixes);
     if (c.size() > 0) {
-      head = builder.newBlank();
+      head = builder.new_blank();
       Object cn = c.get(0);
-      Object first = RDF.getFirst();
-      Object rest = RDF.getRest();
-      if (cn instanceof AstNode) ((AstNode)cn).addAsObject(triples, head, first);
+      Object first = RDF.getFirst(prefixes);
+      Object rest = RDF.getRest(prefixes);
+      if (cn instanceof AstNode) ((AstNode)cn).addAsObject(prefixes, triples, head, first);
       else triples.add(new Triple(head, first, cn));
       Object last = head;
       for (int i = 1; i < c.size(); i++) {
-        Object n = builder.newBlank();
+        Object n = builder.new_blank();
         triples.add(new Triple(last, rest, n));
         Object li = c.get(i);
-        if (li instanceof AstNode) ((AstNode)li).addAsObject(triples, n, first);
+        if (li instanceof AstNode) ((AstNode)li).addAsObject(prefixes, triples, n, first);
         else triples.add(new Triple(n, first, li));
         last = n;
       }
@@ -56,8 +57,8 @@ public class CollectionNode extends Symbol implements AstNode {
     return triples;
   }
 
-  public Object getNode() {
-    if (head == null) _triples = getTriples(new ArrayList<Triple>());
+  public Object getNode(IPersistentMap prefixes) {
+    if (head == null) _triples = getTriples(prefixes, new ArrayList<Triple>());
     return head;
   }
 

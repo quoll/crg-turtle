@@ -1,6 +1,7 @@
 package crg.turtle.ast;
-import crg.turtle.NodeBuilder;
+import crg.turtle.nodes.NodeBuilder;
 import java.util.Map;
+import clojure.lang.IPersistentMap;
 
 public class RDF {
 
@@ -20,51 +21,49 @@ public class RDF {
   private static Object firstFull = null;
   private static Object restFull = null;
   private static Object nilFull = null;
-  private static Map<String,String> prefixMap;
   private static NodeBuilder builder;
 
 
-  public static void init(NodeBuilder builder, Map<String,String> prefixMap) {
+  public static void init(NodeBuilder builder) {
     RDF.builder = builder;
-    RDF.prefixMap = prefixMap;
   }
 
-  public static Object getType() {
+  public static Object getType(IPersistentMap prefixMap) {
     if (prefixMap.containsKey(PREFIX)) {
-      if (type == null) type = builder.newIri(prefixMap, null, PREFIX, TYPE);
+      if (type == null) type = builder.new_iri(prefixMap, null, PREFIX, TYPE);
       return type;
     } else {
-      if (typeFull == null) typeFull = builder.newIri(NS + TYPE);
+      if (typeFull == null) typeFull = builder.new_iri(NS + TYPE);
       return typeFull;
     }
   }
 
-  public static Object getFirst() {
+  public static Object getFirst(IPersistentMap prefixMap) {
     if (prefixMap.containsKey(PREFIX)) {
-      if (first == null) first = builder.newIri(prefixMap, null, PREFIX, FIRST);
+      if (first == null) first = builder.new_iri(prefixMap, null, PREFIX, FIRST);
       return first;
     } else {
-      if (firstFull == null) firstFull = builder.newIri(NS + FIRST);
+      if (firstFull == null) firstFull = builder.new_iri(NS + FIRST);
       return firstFull;
     }
   }
 
-  public static Object getRest() {
+  public static Object getRest(IPersistentMap prefixMap) {
     if (prefixMap.containsKey(PREFIX)) {
-      if (rest == null) rest = builder.newIri(prefixMap, null, PREFIX, REST);
+      if (rest == null) rest = builder.new_iri(prefixMap, null, PREFIX, REST);
       return rest;
     } else {
-      if (restFull == null) restFull = builder.newIri(NS + REST);
+      if (restFull == null) restFull = builder.new_iri(NS + REST);
       return restFull;
     }
   }
 
-  public static Object getNil() {
+  public static Object getNil(IPersistentMap prefixMap) {
     if (prefixMap.containsKey(PREFIX)) {
-      if (nil == null) nil = builder.newIri(prefixMap, null, PREFIX, NIL);
+      if (nil == null) nil = builder.new_iri(prefixMap, null, PREFIX, NIL);
       return nil;
     } else {
-      if (nilFull == null) nilFull = builder.newIri(NS + NIL);
+      if (nilFull == null) nilFull = builder.new_iri(NS + NIL);
       return nilFull;
     }
   }

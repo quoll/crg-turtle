@@ -10,6 +10,10 @@
        :e :f 1.0e0 ; :g 3.0e0.
        :h :i \"j\".")
 
+(defn get-subject [[s p o]] s)
+(defn get-predicate [[s p o]] p)
+(defn get-object [[s p o]] o)
+
 (deftest simple-test
   (testing "Simple instantiation of parser for basic parse operations."
     (let [s (ByteArrayInputStream. (.getBytes t "UTF-8"))
@@ -21,16 +25,16 @@
         (is (= (count triples) 6))
         (is (= (count (get-prefix-map parser)) 2))
         (is (empty? base))
-        (is (= (.getSubject (first triples)) :a))
-        (is (= (.getPredicate (first triples)) :b))
-        (is (= (.getObject (first triples)) 1.0))
-        (is (= (.getSubject (last triples)) :h))
-        (is (= (.getPredicate (last triples)) :i))
-        (is (= (.getObject (last triples)) "j"))
+        (is (= (get-subject (first triples)) :a))
+        (is (= (get-predicate (first triples)) :b))
+        (is (= (get-object (first triples)) 1.0))
+        (is (= (get-subject (last triples)) :h))
+        (is (= (get-predicate (last triples)) :i))
+        (is (= (get-object (last triples)) "j"))
         (let [f (nth triples 4)]
-          (is (= (.getSubject f) :e))
-          (is (= (.getPredicate f) :g))
-          (is (= (.getObject f) 3.0)))
+          (is (= (get-subject f) :e))
+          (is (= (get-predicate f) :g))
+          (is (= (get-object f) 3.0)))
         ))))
 
 (def cpx "@base <http://ex.com/> .

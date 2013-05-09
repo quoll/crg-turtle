@@ -1,46 +1,46 @@
 %package "crg.turtle";
-%import "crg.turtle.ast.*";
+%import "crg.turtle.nodes.NodeBuilder";
+%import "crg.turtle.nodes.*";
 %import "java.util.ArrayList";
 %import "java.util.Collections";
 %import "java.util.List";
 %import "java.util.Map";
 %import "java.util.HashMap";
+%import "clojure.lang.RT";
+%import "clojure.lang.Keyword";
+%import "clojure.lang.PersistentArrayMap";
+%import "clojure.lang.IPersistentMap";
+%import "clojure.lang.PersistentVector";
+%import "clojure.lang.IPersistentCollection";
 %class "Parser";
 
 %embed {:
   private String docBase = null;
-  private Map<String,String> prefixMap = new HashMap<String,String>();
+  private IPersistentMap prefixMap = PersistentArrayMap.EMPTY;
   private NodeBuilder builder;
-  private Types types;
+  private Nodes clj = new NodeImpl();
   private static final Symbol EMPTY = new Symbol(Collections.emptyList());
+  private static final Symbol RDF_TYPE = new Symbol(RT.keyword("rdf", "type"));
+  private static final Keyword XSD_INTEGER = RT.keyword("xsd", "integer");
+  private static final Keyword XSD_DOUBLE = RT.keyword("xsd", "double");
+  private static final Keyword XSD_DECIMAL = RT.keyword("xsd", "decimal");
+  private static final Keyword XSD_BOOLEAN = RT.keyword("xsd", "boolean");
 
   public Parser(NodeBuilder builder) {
     this();
     this.builder = builder;
-    RDF.init(builder, prefixMap);
-    types = new Types(builder);
   }
 
-  public Map<String,String> getPrefixMap() { return prefixMap; }
+  public IPersistentMap getPrefixMap() { return prefixMap; }
 
   public String getBase() { return docBase; }
 
   public void setBase(String b) {
     if (b.indexOf(':') < 0) docBase = docBase + b;
     else docBase = b;
-    prefixMap.put("", docBase);
+    prefixMap = prefixMap.assoc("", docBase);
   }
 
-  Symbol getTriples(List<Triple> triples, Object s, List<PredicateObjects> pol) {
-    for (PredicateObjects po: pol) {
-      Object p = po.getPredicate();
-      for (Object o: po.getObjects()) {
-        if (o instanceof AstNode) ((AstNode)o).addAsObject(triples, s, p);
-        else triples.add(new Triple(s, p, o));
-      }
-    }
-    return new Symbol(triples);
-  }
 :};
 
 %terminals BASE, PREFIX, SPARQL_BASE, SPARQL_PREFIX, DOT, IRI_REF, PNAME_NS, PNAME_LN;
@@ -67,8 +67,8 @@
 %typeof BLANK_NODE = "String";
 %typeof predicateObject = "PredicateObjects";
 %typeof predicateObjectList = "List<PredicateObjects>";
-%typeof predicateObjectSemiList = "List<PredicateObjects>";
-%typeof objectList = "List<Object>";
+%typeof predicateObjectSemiList = "IPersistentCollection";
+%typeof objectList = "IPersistentCollection";
 %typeof PrefixedName = "String[]";
 
 %goal document;
@@ -83,61 +83,57 @@ directive = prefixID
           | sparqlPrefix
           | sparqlBase;
 
-prefixID = PREFIX PNAME_NS.ns IRI_REF.ref DOT {: prefixMap.put(ns, ref);
+prefixID = PREFIX PNAME_NS.ns IRI_REF.ref DOT {: prefixMap = prefixMap.assoc(ns, ref);
   return EMPTY; :};
 
 base = BASE IRI_REF.b DOT {: setBase(b); return EMPTY; :};
 
-sparqlPrefix = SPARQL_PREFIX PNAME_NS.ns IRI_REF.ref {: prefixMap.put(ns, ref); return EMPTY; :};
+sparqlPrefix = SPARQL_PREFIX PNAME_NS.ns IRI_REF.ref {: prefixMap = prefixMap.assoc(ns, ref); return EMPTY; :};
 
 sparqlBase = SPARQL_BASE IRI_REF.b DOT {: setBase(b); return EMPTY; :};
 
 triples = subject.s predicateObjectList.pol {:
-    List<Triple> t = new ArrayList<Triple>();
+    IPersistentCollection t = null;
     Object subj;
     Object sa = s.value;
     if (sa instanceof AstNode) {
-      ((AstNode)sa).getTriples(t);
-      subj = ((AstNode)sa).getNode();
+      t = (IPersistentCollection)((AstNode)sa).get_triples(builder);
+      subj = ((AstNode)sa).get_node(builder);
     } else {
+      t = PersistentVector.EMPTY;
       subj = sa;
     }
-    return getTriples(t, subj, pol);
+    return new Symbol(clj.add_triples(t, builder, subj, pol));
   :}
   | blankNodePropertyList.bl predicateObjectList.pol? {:
-    List<Triple> t = new ArrayList<Triple>();
-    ((PropertyListNode)bl.value).getTriples(t);
-    if (pol != null && !pol.isEmpty()) return getTriples(t, ((PropertyListNode)bl.value).getNode(), pol);
+    IPersistentCollection t = (IPersistentCollection)((PropertyListNode)bl.value).get_triples(builder);
+    if (pol != null && !pol.isEmpty()) {
+      return new Symbol(clj.add_triples(t, builder, ((PropertyListNode)bl.value).get_node(builder), pol));
+    }
     return new Symbol(t);
   :};
 
 predicateObjectList = predicateObjectSemiList.posl SEMICOLON* {: return _symbol_posl; :};
 
 predicateObjectSemiList = predicateObject.po {:
-                      ArrayList<PredicateObjects> lst = new ArrayList<PredicateObjects>();
-                      lst.add(po);
-                      return new Symbol(lst);
+                      return new Symbol(RT.vector(po));
                     :}
                     | predicateObjectSemiList.posl SEMICOLON+ predicateObject.po {:
-                      posl.add(po);
-                      return _symbol_posl;
+                      return new Symbol(RT.conj(posl, po));
                     :};
 
-predicateObject = verb.v objectList.ol {: return new PredicateObjects(v.value, ol); :};
+predicateObject = verb.v objectList.ol {: return new Symbol(clj.new_predicate_objects(v.value, ol)); :};
 
 objectList = object.o {:
-             ArrayList<Object> lst = new ArrayList<Object>();
-             lst.add(o.value);
-             return new Symbol(lst);
+             return new Symbol(RT.vector(o.value));
            :}
            | objectList.ol COMMA object.o {:
-             ol.add(o.value);
-             return _symbol_ol;
+             return new Symbol(RT.conj(ol, o.value));
            :};
 
 verb = IRIref
      | RDF_TYPE {: 
-       return new Symbol(RDF.getType());
+       return RDF_TYPE;
      :};
 
 subject = IRIref
@@ -150,35 +146,43 @@ object = IRIref
 
 literal = RDFLiteral
         | DOUBLE_LITERAL.l {:
-          return new Symbol(builder.newLiteral(l, types.getXsdDouble(prefixMap), null));
+          return new Symbol(builder.new_literal(l, XSD_DOUBLE, null));
         :}
         | DECIMAL_LITERAL.l {:
-          return new Symbol(builder.newLiteral(l, types.getXsdDecimal(prefixMap), null));
+          return new Symbol(builder.new_literal(l, XSD_DECIMAL, null));
         :}
         | INTEGER_LITERAL.l {:
-            return new Symbol(builder.newLiteral(l, types.getXsdInteger(prefixMap), null));
+            return new Symbol(builder.new_literal(l, XSD_INTEGER, null));
         :}
         | BOOL.b {:
-          return new Symbol(types.getXsdBooleanValue(prefixMap, b));
+          // TODO hard code this to true/false
+          return new Symbol(builder.new_literal(b, XSD_BOOLEAN, null));
         :};
 
-blank = BLANK_NODE.b {: return b == null || b.length() == 0 ? new Symbol(builder.newBlank()) : new Symbol(builder.newBlank(b)); :}
-      | collection.c {: return c; :};
+blank = BLANK_NODE.b {:
+      return b == null || b.length() == 0
+        ? new Symbol(builder.new_blank()) : new Symbol(builder.new_blank(b));
+  :}
+  | collection.c {: return c; :};
 
-blankNodePropertyList = START_BLANKNODE_LIST predicateObjectList.l END_BLANKNODE_LIST {: return new PropertyListNode(builder.newBlank(), l); :};
+blankNodePropertyList = START_BLANKNODE_LIST predicateObjectList.l END_BLANKNODE_LIST {:
+      return new Symbol(clj.new_property_list_node(builder.new_blank(), l));
+  :};
 
-collection = START_COLLECTION object.ol* END_COLLECTION {: return new CollectionNode(builder, (List<Symbol>)ol.value); :};
+collection = START_COLLECTION object.ol* END_COLLECTION {:
+      return new Symbol(clj.new_collection_node(builder, (List<Symbol>)ol.value));
+  :};
 
 RDFLiteral = STRING.s LangOrType.lt? {:
-      if (lt.value == null) return new Symbol(builder.newLiteral(s, null, null));
-      return new Symbol(builder.newLiteral(s, ((Object[])lt.value)[0], (String)((Object[])lt.value)[1]));
+      if (lt.value == null) return new Symbol(builder.new_literal(s, null, null));
+      return new Symbol(builder.new_literal(s, ((Object[])lt.value)[0], (String)((Object[])lt.value)[1]));
   :};
 
 LangOrType = LANGTAG.l {: return new Symbol(new Object[] { null, l }); :}
          | TYPED_LITERAL_SEPARATOR IRIref.r {: return new Symbol(new Object[] { r.value, null });:};
 
-IRIref = IRI_REF.i        {: return new Symbol(builder.newIri(i, docBase)); :}
-       | PrefixedName.n   {: return new Symbol(builder.newIri(prefixMap, docBase, n[0], n[1])); :};
+IRIref = IRI_REF.i        {: return new Symbol(builder.new_iri(i, docBase)); :}
+       | PrefixedName.n   {: return new Symbol(builder.new_iri(prefixMap, docBase, n[0], n[1])); :};
 
 PrefixedName = PNAME_LN.n {: return new Symbol(n.split(":")); :}
              | PNAME_NS.n {: return new Symbol(new String[] {n, ""}); :};

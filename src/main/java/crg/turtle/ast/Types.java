@@ -1,6 +1,6 @@
 package crg.turtle.ast;
-import crg.turtle.NodeBuilder;
-import java.util.Map;
+import crg.turtle.nodes.NodeBuilder;
+import clojure.lang.IPersistentMap;
 
 public class Types {
 
@@ -36,15 +36,15 @@ public class Types {
     this.factory = factory;
   }
 
-  private final Object getXsdType(Map<String,String> prefixMap, String type) {
-    return factory.newIri(prefixMap, null, XSD, type);
+  private final Object getXsdType(IPersistentMap prefixMap, String type) {
+    return factory.new_iri(prefixMap, null, XSD, type);
   }
 
   private final Object getXsdTypeFull(String type) {
-    return factory.newIri(XSD_NS + type);
+    return factory.new_iri(XSD_NS + type);
   }
 
-  private final Object getXsdBooleanType(Map<String,String> prefixMap) {
+  private final Object getXsdBooleanType(IPersistentMap prefixMap) {
     if (xsdBool == null) xsdBool = getXsdType(prefixMap, BOOLEAN);
     return xsdBool;
   }
@@ -54,7 +54,7 @@ public class Types {
     return xsdBoolFull;
   }
 
-  public Object getXsdDouble(Map<String,String> prefixMap) {
+  public Object getXsdDouble(IPersistentMap prefixMap) {
     if (prefixMap.containsKey(XSD)) {
       if (xsdDouble == null) xsdDouble = getXsdType(prefixMap, DOUBLE);
       return xsdDouble;
@@ -64,7 +64,7 @@ public class Types {
     }
   }
 
-  public Object getXsdDecimal(Map<String,String> prefixMap) {
+  public Object getXsdDecimal(IPersistentMap prefixMap) {
     if (prefixMap.containsKey(XSD)) {
       if (xsdDecimal == null) xsdDecimal = getXsdType(prefixMap, DECIMAL);
       return xsdDecimal;
@@ -74,7 +74,7 @@ public class Types {
     }
   }
 
-  public Object getXsdInteger(Map<String,String> prefixMap) {
+  public Object getXsdInteger(IPersistentMap prefixMap) {
     if (prefixMap.containsKey(XSD)) {
       if (xsdInteger == null) xsdInteger = getXsdType(prefixMap, INTEGER);
       return xsdInteger;
@@ -84,20 +84,20 @@ public class Types {
     }
   }
 
-  public Object getXsdBooleanValue(Map<String,String> prefixMap, boolean value) {
+  public Object getXsdBooleanValue(IPersistentMap prefixMap, boolean value) {
     if (prefixMap.containsKey(XSD)) {
       if (value) {
-        if (xsdTrue == null) xsdTrue = factory.newLiteral(TRUE, getXsdBooleanType(prefixMap), null);
+        if (xsdTrue == null) xsdTrue = factory.new_literal(TRUE, getXsdBooleanType(prefixMap), null);
         return xsdTrue;
       }
-      if (xsdFalse == null) xsdFalse = factory.newLiteral(FALSE, getXsdBooleanType(prefixMap), null);
+      if (xsdFalse == null) xsdFalse = factory.new_literal(FALSE, getXsdBooleanType(prefixMap), null);
       return xsdFalse;
     } else {
       if (value) {
-        if (xsdTrueFull == null) xsdTrueFull = factory.newLiteral(TRUE, getXsdBooleanTypeFull(), null);
+        if (xsdTrueFull == null) xsdTrueFull = factory.new_literal(TRUE, getXsdBooleanTypeFull(), null);
         return xsdTrueFull;
       }
-      if (xsdFalseFull == null) xsdFalseFull = factory.newLiteral(FALSE, getXsdBooleanTypeFull(), null);
+      if (xsdFalseFull == null) xsdFalseFull = factory.new_literal(FALSE, getXsdBooleanTypeFull(), null);
       return xsdFalseFull;
     }
   }

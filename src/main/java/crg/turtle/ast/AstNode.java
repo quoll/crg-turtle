@@ -1,7 +1,7 @@
 package crg.turtle.ast;
 
 import java.util.List;
-import crg.turtle.NodeBuilder;
+import clojure.lang.IPersistentMap;
 
 public interface AstNode {
   /**
@@ -10,14 +10,14 @@ public interface AstNode {
    * @param triples A list of triples to add to. This list, or a superset of it, should be returned.
    * @return a list containing everything from triples plus the new triples associated with this node.
    */
-  List<Triple> getTriples(List<Triple> triples);
+  List<Triple> getTriples(IPersistentMap prefixes, List<Triple> triples);
 
   /**
    * If this node represents more, then get the simple node that this structure
    * is built around.
    * @return A single blank node.
    */
-  Object getNode();
+  Object getNode(IPersistentMap prefixes);
 
   /**
    * Tells a node to add itself as the object of a triple, along with any
@@ -27,6 +27,6 @@ public interface AstNode {
    * @param p The predicate of the triple that this is an object of.
    * @return A list containing all of triples, plus the triples associated with this object.
    */
-  List<Triple> addAsObject(List<Triple> triples, Object s, Object p);
+  List<Triple> addAsObject(IPersistentMap prefixes, List<Triple> triples, Object s, Object p);
 
 }
