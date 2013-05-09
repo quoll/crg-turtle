@@ -168,7 +168,10 @@ LangOrType = LANGTAG.l {: return new Symbol(new Object[] { null, l }); :}
          | TYPED_LITERAL_SEPARATOR IRIref.r {: return new Symbol(new Object[] { r.value, null });:};
 
 IRIref = IRI_REF.i        {: return new Symbol(builder.new_iri(i, docBase)); :}
-       | PrefixedName.n   {: return new Symbol(builder.new_iri(prefixMap, docBase, n[0], n[1])); :};
+       | PrefixedName.n   {:
+         PersistentVector tuple = (PersistentVector)builder.new_iri(prefixMap, docBase, n[0], n[1]);
+         prefixMap = (IPersistentMap)RT.second(tuple);
+         return new Symbol(RT.first(tuple)); :};
 
 PrefixedName = PNAME_LN.n {: return new Symbol(n.split(":")); :}
              | PNAME_NS.n {: return new Symbol(new String[] {n, ""}); :};

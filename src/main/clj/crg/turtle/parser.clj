@@ -52,7 +52,7 @@
 (defn based-iri [^String i ^String b]
   (let [^URI u (URI. i)]
     (if (.isAbsolute u) u (keyword i))))
-(defn full-iri [^Map pm ^String b ^String p ^String l] (if p (if (empty? p) (keyword l) (keyword p l)) (based-iri l b)))
+(defn full-iri [^Map pm ^String b ^String p ^String l] [(if p (if (empty? p) (keyword l) (keyword p l)) (based-iri l b)) pm])
 
 (defn triples-seq
   [^crg.turtle.Parser parser ^crg.turtle.TtlLexer lexer]

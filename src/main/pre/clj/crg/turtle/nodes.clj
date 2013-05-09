@@ -9,7 +9,8 @@
   (new-iri [builder ^String iri]
            [builder ^String iri ^String base]
            [builder ^Map prefix-map ^String base ^String prefix ^String local]
-    "Creates an IRI given a full IRI, or parts of one and a context")
+    "Creates an IRI given a full IRI, or parts of one and a context. When a context
+     is provided, then a new context is returned in a tuple.")
 
   (new-literal [builder ^String lexical type ^String lang]
     "Creates a literal using a given lexical form, an IRI for the type (may be nil),
