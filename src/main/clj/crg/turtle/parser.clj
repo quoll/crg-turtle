@@ -1,7 +1,8 @@
 (ns ^{:doc "A graph parser"
       :author "Paul Gearon"}
   crg.turtle.parser
-  (:require [crg.turtle.nodes :as nodes])
+  (:require [crg.turtle.nodes :as nodes]
+            [crg.turtle.qname :as qname])
   (:import [crg.turtle TtlLexer Parser]
            [java.io InputStream]
            [java.util UUID Map]
@@ -48,11 +49,13 @@
   ([] (BlankNode. (swap! cntr inc) #_(UUID/randomUUID)))
   ([^String id] (BlankNode. (subs id 2))))
 
-(defn iri [i] (URI. i))
-(defn based-iri [^String i ^String b]
+;; each of the IRI functions returns an IRI representation and a new prefix map
+(defn iri [pm i] [(apply keyword (qname/split-iri i)) pm])
+(defn based-iri [^Map pm ^String i ^String b]
   (let [^URI u (URI. i)]
-    (if (.isAbsolute u) u (keyword i))))
-(defn full-iri [^Map pm ^String b ^String p ^String l] [(if p (if (empty? p) (keyword l) (keyword p l)) (based-iri l b)) pm])
+    (if (.isAbsolute u) (iri pm i) [(keyword i) pm])))
+(defn full-iri [^Map pm ^String b ^String p ^String l]
+  (if p [(if (empty? p) (keyword l) (keyword p l)) pm] (based-iri pm l b)))
 
 (defn triples-seq
   [^crg.turtle.Parser parser ^crg.turtle.TtlLexer lexer]
@@ -78,8 +81,8 @@
                  (reify nodes/NodeBuilder
                    (new-blank [_] (blank-node))
                    (new-blank [_ id] (blank-node id))
-                   (new-iri [_ i] (iri i))
-                   (new-iri [_ i b] (based-iri i b))
+                   (new-iri [_ pm i] (iri pm i))
+                   (new-iri [_ pm i b] (based-iri pm i b))
                    (new-iri [_ pm b p l] (full-iri pm b p l))
                    (new-literal [_ lex t lang] (clojure-literal lex t lang))))]
     (->TtlParser parser lexer)))

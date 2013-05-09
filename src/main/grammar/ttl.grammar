@@ -167,7 +167,7 @@ RDFLiteral = STRING.s LangOrType.lt? {:
 LangOrType = LANGTAG.l {: return new Symbol(new Object[] { null, l }); :}
          | TYPED_LITERAL_SEPARATOR IRIref.r {: return new Symbol(new Object[] { r.value, null });:};
 
-IRIref = IRI_REF.i        {: return new Symbol(builder.new_iri(i, docBase)); :}
+IRIref = IRI_REF.i        {: return new Symbol(builder.new_iri(prefixMap, i, docBase)); :}
        | PrefixedName.n   {:
          PersistentVector tuple = (PersistentVector)builder.new_iri(prefixMap, docBase, n[0], n[1]);
          prefixMap = (IPersistentMap)RT.second(tuple);

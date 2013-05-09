@@ -6,11 +6,11 @@
              [builder ^String id]
     "Creates a blank node")
 
-  (new-iri [builder ^String iri]
-           [builder ^String iri ^String base]
+  (new-iri [builder ^Map prefix-map ^String iri]
+           [builder ^Map prefix-map ^String iri ^String base]
            [builder ^Map prefix-map ^String base ^String prefix ^String local]
-    "Creates an IRI given a full IRI, or parts of one and a context. When a context
-     is provided, then a new context is returned in a tuple.")
+    "Creates an IRI given a full IRI, or parts of one and a context.
+     Returns the IRI/prefixMap as a tuple, since the prefixMap can be updated.")
 
   (new-literal [builder ^String lexical type ^String lang]
     "Creates a literal using a given lexical form, an IRI for the type (may be nil),
