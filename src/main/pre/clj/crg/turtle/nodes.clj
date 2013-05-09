@@ -77,6 +77,13 @@
               n
               (concat triples (add-as-object cn builder n :rdf/first) joiner))))))))
 
+(defn add-triples [builder t s pol]
+  (apply concat
+         (cons t
+               (for [po pol, o (:objects po)]
+                 (let [p (:predicate po)]
+                   (add-as-object o builder s p))))))
+
 (defprotocol Nodes
   (^CollectionNode new-collection-node [n ^NodeBuilder builder c] "creates a new CollectionNode")
 
@@ -86,8 +93,10 @@
   
   (new-triple [n s p o] "Shortcut for building a triple")
   
-  (add-triples [n b t s pol] "gets triples from s/pol and adds them to t"))
-
+  (subject-triples [n b sa pol] "Gets triples from s/pol")
+  
+  (blank-subject-triples [n b bl pol] "Gets triples from bl/pol"))
+  
 (defrecord NodeImpl []
   Nodes
   (new-collection-node [_ builder c]
@@ -100,11 +109,11 @@
   (new-predicate-objects [_ pred objs] (->PredicateObjects pred objs))
   
   (new-triple [_ s p o] [s p o])
-  
-  (add-triples [_ t builder s pol]
-    (apply concat
-           (cons t
-                 (for [po pol, o (:objects po)]
-                   (let [p (:predicate po)]
-                     (add-as-object o builder s p)))))))
+
+  (subject-triples [_ bldr sa pol]
+    (add-triples bldr (get-triples sa bldr) (get-node sa bldr) pol))
+
+  (blank-subject-triples [_ bldr bl pol]
+    (let [t (get-triples bl bldr)]
+      (if (seq pol) (add-triples bldr t (get-node bl bldr) pol) t))))
 

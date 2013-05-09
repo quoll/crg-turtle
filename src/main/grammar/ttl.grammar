@@ -93,24 +93,10 @@ sparqlPrefix = SPARQL_PREFIX PNAME_NS.ns IRI_REF.ref {: prefixMap = prefixMap.as
 sparqlBase = SPARQL_BASE IRI_REF.b DOT {: setBase(b); return EMPTY; :};
 
 triples = subject.s predicateObjectList.pol {:
-    IPersistentCollection t = null;
-    Object subj;
-    Object sa = s.value;
-    if (sa instanceof AstNode) {
-      t = (IPersistentCollection)((AstNode)sa).get_triples(builder);
-      subj = ((AstNode)sa).get_node(builder);
-    } else {
-      t = PersistentVector.EMPTY;
-      subj = sa;
-    }
-    return new Symbol(clj.add_triples(t, builder, subj, pol));
+    return new Symbol(clj.subject_triples(builder, s.value, pol));
   :}
   | blankNodePropertyList.bl predicateObjectList.pol? {:
-    IPersistentCollection t = (IPersistentCollection)((PropertyListNode)bl.value).get_triples(builder);
-    if (pol != null && !pol.isEmpty()) {
-      return new Symbol(clj.add_triples(t, builder, ((PropertyListNode)bl.value).get_node(builder), pol));
-    }
-    return new Symbol(t);
+    return new Symbol(clj.blank_subject_triples(builder, bl.value, pol));
   :};
 
 predicateObjectList = predicateObjectSemiList.posl SEMICOLON* {: return _symbol_posl; :};
