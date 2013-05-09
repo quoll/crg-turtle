@@ -75,6 +75,9 @@ ex:data :hasCollection () .
           base (get-base parser)]
       (is (count (get-prefix-map parser)) 0)
       (let [triples (into [] triple-stream)]
+        (println "TRIPLES: " (take 5 triples))
         (is (= (count triples) 83))
-        (is (= (count (get-prefix-map parser)) 5)))))) ; the empty namespace defaults to base
+        (is (= (count (get-prefix-map parser)) 7)))))) ; the empty namespace defaults to base
+               ;; creates ns1 for http://www.w3.org/TR/
+               ;; creates ns2 for http://purl.org/net/dajobe/
 
