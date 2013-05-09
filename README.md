@@ -8,10 +8,12 @@ integers are returned as longs. All other datatypes get returned as a Literal re
 contains the lexical form, the datatype, and the language code. As for normal RDF literals,
 the language code is only available if the datatype is a string (no datatype implies a string).
 
-Where possible, the parser with return keywords rather than URIs (IRIs are not explicitly handled).
-If a URI is represented as a QName, then it will be converted to a keyword instead of a URI. This
-is more convenient for most Clojure applications. Keywords can be converted back into URIs using
-the prefix-map from the parser.
+Where the parser always returns keywords rather than IRIs.
+If an IRI is represented as a QName, then it will be converted to a keyword instead of a IRI. If
+present as a raw IRI, then it will be scanned for an appropriate prefix, and converted to a QName.
+QNames are required for predicates anyway, so this protects against the use of IRIs in that position.
+Clojure applications also work much more conveniently and efficiently with keywords. Keywords can be
+converted back into IRIs using the prefix-map from the parser.
 
 ## Java and Clojure
 
@@ -63,9 +65,8 @@ Probably lots.
 
 ### TODO
 
-  * Provide option to convert URIs to QNames automatically (auto updating the prefixes)
+  * Provide option to convert URIs to QNames automatically (done, but not tested)
   * Provide an option to parse to URI instead of always keywords.
-  * Possibly extend Triple to look like a 3 element list. (Is this necessary?)
 
 ## Acknowledgements
 
