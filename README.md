@@ -1,6 +1,6 @@
 # Turtle
 
-A Turtle loading module for CRG (Clojure RDF Graphs). Meets the standard for the W3C Candidate Recomendation (19 Feb, 2013).
+A Turtle loading module for CRG (Clojure RDF Graphs). Meets the grammar for the W3C Candidate Recomendation (19 Feb, 2013).
 
 Specifically aimed at parsing for Clojure. To this end, XSD strings (which includes previously
 "untyped" literals) are returned as strings, doubles and decimals are returned as doubles and
@@ -13,6 +13,10 @@ If a URI is represented as a QName, then it will be converted to a keyword inste
 is more convenient for most Clojure applications. Keywords can be converted back into URIs using
 the prefix-map from the parser.
 
+## Java and Clojure
+
+While this project uses Beaver as the parser generator, the only Java code written for the project
+is the bare minimum to glue Beaver to the Clojure code that does the work.
 
 ## Installation
 
@@ -59,7 +63,6 @@ Probably lots.
 
 ### TODO
 
-  * Reimplement all non-generated Java code in Clojure. (started)
   * Provide option to convert URIs to QNames automatically (auto updating the prefixes)
   * Provide an option to parse to URI instead of always keywords.
   * Possibly extend Triple to look like a 3 element list. (Is this necessary?)
