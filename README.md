@@ -15,6 +15,10 @@ QNames are required for predicates anyway, so this protects against the use of I
 Clojure applications also work much more conveniently and efficiently with keywords. Keywords can be
 converted back into IRIs using the prefix-map from the parser.
 
+Note that it is possible for the parser to generate Keywords with a namespace and and empty name.
+This is legal both as a QName and as a Keyword, though Clojure does not have a literal representation
+for nameless Keywords.
+
 ## Java and Clojure
 
 While this project uses Beaver as the parser generator, the only Java code written for the project
