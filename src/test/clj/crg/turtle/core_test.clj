@@ -61,6 +61,10 @@ ex:collection3 :hasCollection ( :a :b :c ) ;;; .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 ex:numbers :hasCollection ( 1 2.0 3.0E0 ) .
+ex:data :hasCollection () .
+() :hasData 1 .
+() :hasCollection () .
+( 1.0 ) :hasCollection ( 2 ) .
 ")
 
 (deftest structure-test
@@ -71,6 +75,6 @@ ex:numbers :hasCollection ( 1 2.0 3.0E0 ) .
           base (get-base parser)]
       (is (count (get-prefix-map parser)) 0)
       (let [triples (into [] triple-stream)]
-        (is (= (count triples) 75))
+        (is (= (count triples) 83))
         (is (= (count (get-prefix-map parser)) 5)))))) ; the empty namespace defaults to base
 
