@@ -8,6 +8,26 @@
            [java.util UUID Map]
            [java.net URI]))
 
+(def known-prefixes
+  {"http://www.w3.org/2003/g/data-view#" "grddl"
+   "http://www.w3.org/ns/ma-ont#" "ma"
+   "http://www.w3.org/2002/07/owl#" "owl"
+   "http://www.w3.org/ns/prov#" "prov"
+   "http://www.w3.org/1999/02/22-rdf-syntax-ns#" "rdf"
+   "http://www.w3.org/ns/rdfa#" "rdfa"
+   "http://www.w3.org/2000/01/rdf-schema#" "rdfs"
+   "http://www.w3.org/2007/rif#" "rif"
+   "http://www.w3.org/ns/r2rml#" "rr"
+   "http://www.w3.org/ns/sparql-service-description#" "sd"
+   "http://www.w3.org/2004/02/skos/core#" "skos"
+   "http://www.w3.org/2008/05/skos-xl#" "skosxl"
+   "http://www.w3.org/2007/05/powder#" "wdr"
+   "http://rdfs.org/ns/void#" "void"
+   "http://www.w3.org/2007/05/powder-s#" "wdrs"
+   "http://www.w3.org/1999/xhtml/vocab#" "xhv"
+   "http://www.w3.org/XML/1998/namespace" "xml"
+   "http://www.w3.org/2001/XMLSchema#" "xsd"})
+
 (defn as-uri [u]
   (if (keyword? u)
     (str (namespace u) \: (name u))
@@ -43,17 +63,36 @@
 
 (defn clojure-literal [^String lex t ^String lang] ((literal-fns t typed-literal) lex t lang))
 
-(def cntr (atom 0))
+(defn rget "Reverse get function" [m v] (some (fn [[k vv]] (when (= v vv) k)) m))
+
+(def bcntr (atom 0))
 
 (defn blank-node
-  ([] (BlankNode. (swap! cntr inc) #_(UUID/randomUUID)))
+  ([] (BlankNode. (swap! bcntr inc) #_(UUID/randomUUID)))
   ([^String id] (BlankNode. (subs id 2))))
 
+(def pre-cntr (atom 0))
+
+(defn generate-prefix
+  [m]
+  (loop []
+    (let [pre (str "ns" (swap! pre-cntr inc))]
+      (if-not (m pre)
+        pre
+        (recur)))))
+
 ;; each of the IRI functions returns an IRI representation and a new prefix map
-(defn iri [pm i] [(apply keyword (qname/split-iri i)) pm])
+(defn iri [prefix-map i]
+  (let [[prefix-ns ln] (qname/split-iri i)]
+    (if-let [pn (rget prefix-map prefix-ns)]
+      [(keyword pn ln) prefix-map]
+      (let [prefix-name (or (known-prefixes prefix-ns) (generate-prefix prefix-map))]
+        [(keyword prefix-name ln) (assoc prefix-map prefix-name prefix-ns)]))))
+
 (defn based-iri [^Map pm ^String i ^String b]
   (let [^URI u (URI. i)]
     (if (.isAbsolute u) (iri pm i) [(keyword i) pm])))
+
 (defn full-iri [^Map pm ^String b ^String p ^String l]
   (if p [(if (empty? p) (keyword l) (keyword p l)) pm] (based-iri pm l b)))
 
