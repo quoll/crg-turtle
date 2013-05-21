@@ -28,7 +28,7 @@ is the bare minimum to glue Beaver to the Clojure code that does the work.
 
 Add the following dependency to a leiningen project.clj:
 ```clj
-  [org.clojars.quoll/turtle "0.1.0"]
+  [org.clojars.quoll/turtle "0.1.2"]
 ```
 
 ## Usage
