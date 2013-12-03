@@ -16,7 +16,7 @@
 
 %embed {:
   private String docBase = null;
-  private IPersistentMap prefixMap = PersistentArrayMap.EMPTY;
+  private IPersistentMap prefixMap;
   private NodeBuilder builder;
   private Nodes clj = new NodeImpl();
   private static final Symbol EMPTY = new Symbol(Collections.emptyList());
@@ -26,9 +26,10 @@
   private static final Keyword XSD_DECIMAL = RT.keyword("xsd", "decimal");
   private static final Keyword XSD_BOOLEAN = RT.keyword("xsd", "boolean");
 
-  public Parser(NodeBuilder builder) {
+  public Parser(NodeBuilder builder, IPersistentMap prefixMap) {
     this();
     this.builder = builder;
+    this.prefixMap = prefixMap;
   }
 
   public IPersistentMap getPrefixMap() { return prefixMap; }

@@ -1,10 +1,10 @@
 ;; build with:  lein with-profile precomp compile
-(defproject org.clojars.quoll/turtle "0.1.2"
+(defproject org.clojars.quoll/turtle "0.1.3"
   :description "Turtle Parser for Clojure"
   :url "https://github.com/quoll/crg-turtle"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[org.clojure/clojure "1.5.0"]
+  :dependencies [[org.clojure/clojure "1.5.1"]
                  [net.sf.beaver/beaver-ant "0.9.9"]]
 
   :plugins [[lein-beaver "0.1.2-SNAPSHOT"]]

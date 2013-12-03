@@ -82,19 +82,19 @@
         (recur)))))
 
 ;; each of the IRI functions returns an IRI representation and a new prefix map
-(defn iri [prefix-map i]
+(defn iri [prefix-map i ^clojure.lang.IFn prefix-generate]
   (let [[prefix-ns ln] (qname/split-iri i)]
     (if-let [pn (rget prefix-map prefix-ns)]
       [(keyword pn ln) prefix-map]
-      (let [prefix-name (or (known-prefixes prefix-ns) (generate-prefix prefix-map))]
+      (let [prefix-name (or (known-prefixes prefix-ns) (prefix-generate prefix-map))]
         [(keyword prefix-name ln) (assoc prefix-map prefix-name prefix-ns)]))))
 
-(defn based-iri [^Map pm ^String i ^String b]
+(defn based-iri [^Map pm ^String i ^String b ^clojure.lang.IFn pfx-gen]
   (let [^URI u (URI. i)]
-    (if (.isAbsolute u) (iri pm i) [(keyword i) pm])))
+    (if (.isAbsolute u) (iri pm i pfx-gen) [(keyword i) pm])))
 
-(defn full-iri [^Map pm ^String b ^String p ^String l]
-  (if p [(if (empty? p) (keyword l) (keyword p l)) pm] (based-iri pm l b)))
+(defn full-iri [^Map pm ^String b ^String p ^String l ^clojure.lang.IFn pfx-gen]
+  (if p [(if (empty? p) (keyword l) (keyword p l)) pm] (based-iri pm l b pfx-gen)))
 
 (defn triples-seq
   [^crg.turtle.Parser parser ^crg.turtle.TtlLexer lexer]
@@ -114,15 +114,17 @@
 
 (defn create-parser
   "Create a parser for a stream"
-  [^java.io.InputStream in]
-  (let [lexer (TtlLexer/newLexer in)
-        parser (Parser.
-                 (reify nodes/NodeBuilder
-                   (new-blank [_] (blank-node))
-                   (new-blank [_ id] (blank-node id))
-                   (new-iri [_ pm i] (iri pm i))
-                   (new-iri [_ pm i b] (based-iri pm i b))
-                   (new-iri [_ pm b p l] (full-iri pm b p l))
-                   (new-literal [_ lex t lang] (clojure-literal lex t lang))))]
-    (->TtlParser parser lexer)))
+  ([^java.io.InputStream in] (create-parser in {} generate-prefix))
+  ([^java.io.InputStream in ^java.util.Map known-ns ^clojure.lang.IFn pfx-gen]
+   (let [lexer (TtlLexer/newLexer in)
+         parser (Parser.
+                  (reify nodes/NodeBuilder
+                    (new-blank [_] (blank-node))
+                    (new-blank [_ id] (blank-node id))
+                    (new-iri [_ pm i] (iri pm i pfx-gen))
+                    (new-iri [_ pm i b] (based-iri pm i b pfx-gen))
+                    (new-iri [_ pm b p l] (full-iri pm b p l pfx-gen))
+                    (new-literal [_ lex t lang] (clojure-literal lex t lang)))
+                  (into {} known-ns))]
+     (->TtlParser parser lexer))))
 

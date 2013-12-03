@@ -69,6 +69,7 @@ Probably lots.
 
 ### TODO
 
+  * Update to last publication of Turtle. Diffs listed in Appendix D: http://www.w3.org/TR/turtle/#sec-changelog
   * Provide option to convert URIs to QNames automatically (done, but not tested)
   * Provide an option to parse to URI instead of always keywords.
 
