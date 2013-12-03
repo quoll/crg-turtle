@@ -74,7 +74,7 @@
 (def pre-cntr (atom 0))
 
 (defn generate-prefix
-  [m]
+  [m _]
   (loop []
     (let [pre (str "ns" (swap! pre-cntr inc))]
       (if-not (m pre)
@@ -82,11 +82,12 @@
         (recur)))))
 
 ;; each of the IRI functions returns an IRI representation and a new prefix map
+;; prefix-generate accepts the current prefix map and the namespace that needs a prefix
 (defn iri [prefix-map i ^clojure.lang.IFn prefix-generate]
   (let [[prefix-ns ln] (qname/split-iri i)]
     (if-let [pn (rget prefix-map prefix-ns)]
       [(keyword pn ln) prefix-map]
-      (let [prefix-name (or (known-prefixes prefix-ns) (prefix-generate prefix-map))]
+      (let [prefix-name (or (known-prefixes prefix-ns) (prefix-generate prefix-map prefix-ns))]
         [(keyword prefix-name ln) (assoc prefix-map prefix-name prefix-ns)]))))
 
 (defn based-iri [^Map pm ^String i ^String b ^clojure.lang.IFn pfx-gen]

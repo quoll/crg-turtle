@@ -1,5 +1,5 @@
 ;; build with:  lein with-profile precomp compile
-(defproject org.clojars.quoll/turtle "0.1.3"
+(defproject org.clojars.quoll/turtle "0.1.4"
   :description "Turtle Parser for Clojure"
   :url "https://github.com/quoll/crg-turtle"
   :license {:name "Eclipse Public License"
