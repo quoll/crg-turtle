@@ -1,7 +1,6 @@
 (ns crg.turtle.core
   (:use [clojure.java.io :only [input-stream]])
-  (:require [crg.turtle.parser :as p])
-  (:gen-class))
+  (:require [crg.turtle.parser :as p]))
 
 (defn -main
   "Load a file"
