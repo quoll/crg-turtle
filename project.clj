@@ -1,5 +1,5 @@
 ;; build with:  lein with-profile precomp compile
-(defproject org.clojars.quoll/turtle "0.1.4"
+(defproject org.clojars.quoll/turtle "0.1.5"
   :description "Turtle Parser for Clojure"
   :url "https://github.com/quoll/crg-turtle"
   :license {:name "Eclipse Public License"
@@ -14,6 +14,7 @@
   :source-paths ["src/main/clj"]
   :test-paths ["src/test/clj"]
   :java-source-paths ["src/main/java" "target/src"]
+  :javac-options ["-target" "1.6" "-source" "1.6"]
 
   :grammar-src-dir "src/main/grammar"
   :grammar-dest-dir "target/src/"
@@ -21,5 +22,4 @@
   :profiles { :precomp { :prep-tasks ^:replace ["beaver" "compile"]
                          :source-paths ["src/main/pre/clj"]
                          :aot [crg.turtle.nodes] } }
-
   :main crg.turtle.core)
