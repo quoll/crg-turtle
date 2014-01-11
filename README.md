@@ -24,11 +24,19 @@ for nameless Keywords.
 While this project uses Beaver as the parser generator, the only Java code written for the project
 is the bare minimum to glue Beaver to the Clojure code that does the work.
 
+## Requirements
+
+  * JVM 1.6 or greater
+  * Clojure 1.5.1 or greater
+
+These requirements are due to precompilation of the library. It can be compiled and run with earlier
+versions of Java and Clojure, but the user will need to download the sources and build it themselves.
+
 ## Installation
 
 Add the following dependency to a leiningen project.clj:
 ```clj
-  [org.clojars.quoll/turtle "0.1.2"]
+  [org.clojars.quoll/turtle "0.1.5"]
 ```
 
 ## Usage
