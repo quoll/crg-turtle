@@ -65,6 +65,7 @@ ex:data :hasCollection () .
 () :hasData 1 .
 () :hasCollection () .
 ( 1.0 ) :hasCollection ( 2 ) .
+<uri:1> <uri:2> <foo/bar> .
 ")
 
 (deftest structure-test
@@ -76,8 +77,8 @@ ex:data :hasCollection () .
       (is (count (get-prefix-map parser)) 0)
       (let [triples (into [] triple-stream)]
         (println "TRIPLES: " (take 5 triples))
-        (is (= (count triples) 83))
-        (is (= (count (get-prefix-map parser)) 7)))))) ; the empty namespace defaults to base
+        (is (= (count triples) 84))
+        (is (= (count (get-prefix-map parser)) 9)))))) ; the empty namespace defaults to base
                ;; creates ns1 for http://www.w3.org/TR/
                ;; creates ns2 for http://purl.org/net/dajobe/
 
