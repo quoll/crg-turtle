@@ -69,6 +69,15 @@
         (plx? s offset)
         (pn-chars-u? ch))))
 
+(defn hack-split
+  "Fallback split. If there was no character to split on,
+   check if there is a : character and split on that."
+  [^String u]
+  (let [i (inc (.indexOf u (int \:)))]
+    (if (zero? i)
+      [u ""]
+      [(subs u 0 i) (subs u i)])))
+
 (defn split-iri
   "Splits an IRI into a prefix and local name pair"
   [^String u]
@@ -84,7 +93,7 @@
         [u ""]
         (loop [i endpos]
           (if (< i 0)
-            [u ""]
+            (hack-split u)
             (let [[split back-step] (split-char? u i)]
               (if split
                 (split-from-start i)
