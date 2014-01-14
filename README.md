@@ -8,7 +8,7 @@ integers are returned as longs. All other datatypes get returned as a Literal re
 contains the lexical form, the datatype, and the language code. As for normal RDF literals,
 the language code is only available if the datatype is a string (no datatype implies a string).
 
-Where the parser always returns keywords rather than IRIs.
+The parser now always returns keywords rather than IRIs.
 If an IRI is represented as a QName, then it will be converted to a keyword instead of a IRI. If
 present as a raw IRI, then it will be scanned for an appropriate prefix, and converted to a QName.
 QNames are required for predicates anyway, so this protects against the use of IRIs in that position.
@@ -18,6 +18,14 @@ converted back into IRIs using the prefix-map from the parser.
 Note that it is possible for the parser to generate Keywords with a namespace and and empty name.
 This is legal both as a QName and as a Keyword, though Clojure does not have a literal representation
 for nameless Keywords.
+
+It is not difficult to have the parser return IRIs when QNames were not specified (this was the original
+mode of operation for the parser), so if this need arises then IRIs (or URIs) may  be included easily.
+Keywords are used as these have a more efficient representation, are more compatible with Clojure, and
+because there is no standard implementation of IRI available. Jena includes one, but this involves a lot
+of validity checking that would slow down parsing. Also, this project is explicitly trying to avoid
+third-party non-Clojure libraries (Beaver notwithstanding - it's here because it generates the fastest
+parsers).
 
 ## Java and Clojure
 
