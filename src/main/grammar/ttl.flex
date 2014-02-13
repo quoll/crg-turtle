@@ -112,10 +112,10 @@ BASE = "@base"
 PREFIX = "@prefix"
 SPARQL_PREFIX = [Pp] [Rr] [Ee] [Ff] [Ii][Xx]
 SPARQL_BASE = [Bb][Aa][Ss][Ee]
-IRI_REF = "<" ( [^\<\>\"\{\}\|\^`\\\x00-\x20] | {UCHAR} )* ">"
+IRIREF = "<" ( [^\<\>\"\{\}\|\^`\\\x00-\x20] | {UCHAR} )* ">"
 PNAME_NS = {PN_PREFIX}? ":" 
 PNAME_LN = {PNAME_NS} {PN_LOCAL}
-BLANK_NODE_LABEL = "_:" {PN_LOCAL}
+BLANK_NODE_LABEL = "_:" ( PN_CHARS_U | [0-9] ) ( ( PN_CHARS | '.' )* PN_CHARS )?
 LANGTAG = "@" [a-zA-Z]+ ( "-" [a-zA-Z0-9]+ )*
 TRUE = "true"
 FALSE = "false"
@@ -132,7 +132,7 @@ FALSE = "false"
   {SPARQL_BASE}                  { return token(SPARQL_BASE); }
   {SPARQL_PREFIX}                { return token(SPARQL_PREFIX); }
   {ANON}                         { return token(BLANK_NODE); }
-  {IRI_REF}                      { return token(IRI_REF, yytext().substring(1, yylength() - 1)); }
+  {IRIREF}                       { return token(IRIREF, yytext().substring(1, yylength() - 1)); }
   {PNAME_LN}                     { return token(PNAME_LN, yytext()); }
   {PNAME_NS}                     { return token(PNAME_NS, yytext().substring(0, yylength() - 1)); }
   {COMMA}                        { return token(COMMA); }
