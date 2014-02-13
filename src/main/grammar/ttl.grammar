@@ -44,7 +44,7 @@
 
 :};
 
-%terminals BASE, PREFIX, SPARQL_BASE, SPARQL_PREFIX, DOT, IRI_REF, PNAME_NS, PNAME_LN;
+%terminals BASE, PREFIX, SPARQL_BASE, SPARQL_PREFIX, DOT, IRIREF, PNAME_NS, PNAME_LN;
 %terminals STRING, LANGTAG, INTEGER_LITERAL, DOUBLE_LITERAL, DECIMAL_LITERAL, BOOL;
 %terminals BLANK_NODE, SEMICOLON, COMMA;
 %terminals START_BLANKNODE_LIST, END_BLANKNODE_LIST, START_COLLECTION, END_COLLECTION;
@@ -60,7 +60,7 @@
 %typeof DOUBLE_LITERAL = "String";
 %typeof DECIMAL_LITERAL = "String";
 %typeof INTEGER_LITERAL = "String";
-%typeof IRI_REF = "String";
+%typeof IRIREF = "String";
 %typeof PNAME_LN = "String";
 %typeof PNAME_NS = "String";
 %typeof LANGTAG = "String";
@@ -84,14 +84,14 @@ directive = prefixID
           | sparqlPrefix
           | sparqlBase;
 
-prefixID = PREFIX PNAME_NS.ns IRI_REF.ref DOT {: prefixMap = prefixMap.assoc(ns, ref);
+prefixID = PREFIX PNAME_NS.ns IRIREF.ref DOT {: prefixMap = prefixMap.assoc(ns, ref);
   return EMPTY; :};
 
-base = BASE IRI_REF.b DOT {: setBase(b); return EMPTY; :};
+base = BASE IRIREF.b DOT {: setBase(b); return EMPTY; :};
 
-sparqlPrefix = SPARQL_PREFIX PNAME_NS.ns IRI_REF.ref {: prefixMap = prefixMap.assoc(ns, ref); return EMPTY; :};
+sparqlPrefix = SPARQL_PREFIX PNAME_NS.ns IRIREF.ref {: prefixMap = prefixMap.assoc(ns, ref); return EMPTY; :};
 
-sparqlBase = SPARQL_BASE IRI_REF.b DOT {: setBase(b); return EMPTY; :};
+sparqlBase = SPARQL_BASE IRIREF.b {: setBase(b); return EMPTY; :};
 
 triples = subject.s predicateObjectList.pol {:
     return new Symbol(clj.subject_triples(builder, s.value, pol));
@@ -118,15 +118,15 @@ objectList = object.o {:
              return new Symbol(RT.conj(ol, o.value));
            :};
 
-verb = IRIref
+verb = iri
      | RDF_TYPE {: 
        return RDF_TYPE;
      :};
 
-subject = IRIref
+subject = iri
         | blank;
 
-object = IRIref
+object = iri
        | blank
        | blankNodePropertyList
        | literal;
@@ -166,16 +166,16 @@ RDFLiteral = STRING.s LangOrType.lt? {:
   :};
 
 LangOrType = LANGTAG.l {: return new Symbol(new Object[] { null, l }); :}
-         | TYPED_LITERAL_SEPARATOR IRIref.r {: return new Symbol(new Object[] { r.value, null });:};
+         | TYPED_LITERAL_SEPARATOR iri.r {: return new Symbol(new Object[] { r.value, null });:};
 
-IRIref = IRI_REF.i        {:
-         PersistentVector tuple = (PersistentVector)builder.new_iri(prefixMap, i, docBase);
-         prefixMap = (IPersistentMap)RT.second(tuple);
-         return new Symbol(RT.first(tuple)); :}
-       | PrefixedName.n   {:
-         PersistentVector tuple = (PersistentVector)builder.new_iri(prefixMap, docBase, n[0], n[1]);
-         prefixMap = (IPersistentMap)RT.second(tuple);
-         return new Symbol(RT.first(tuple)); :};
+iri = IRIREF.i         {:
+      PersistentVector tuple = (PersistentVector)builder.new_iri(prefixMap, i, docBase);
+      prefixMap = (IPersistentMap)RT.second(tuple);
+      return new Symbol(RT.first(tuple)); :}
+    | PrefixedName.n   {:
+      PersistentVector tuple = (PersistentVector)builder.new_iri(prefixMap, docBase, n[0], n[1]);
+      prefixMap = (IPersistentMap)RT.second(tuple);
+      return new Symbol(RT.first(tuple)); :};
 
 PrefixedName = PNAME_LN.n {: return new Symbol(n.split(":")); :}
              | PNAME_NS.n {: return new Symbol(new String[] {n, ""}); :};
