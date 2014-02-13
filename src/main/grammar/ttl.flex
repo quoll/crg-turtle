@@ -86,16 +86,16 @@ UCHAR = ( "\\u" {HEX} {HEX} {HEX} {HEX} ) | ( "\\U" {HEX} {HEX} {HEX} {HEX} {HEX
 PN_CHARS_BASE = [a-zA-Z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff] | {UCHAR}
 PN_CHARS_U = {PN_CHARS_BASE} | "_"
 PN_CHARS = {PN_CHARS_U} | [\-0-9\u00b7\u0300-\u036f\u203f-\u2040]
-PN_LOCAL = ( {PN_CHARS_U} | [:0-9] | {PLX} ) ( ( {PN_CHARS} | "." | {PLX} )*  ( {PN_CHARS} | {PLX} ) ) ?
+PN_LOCAL = ( {PN_CHARS_U} | [:0-9] | {PLX} ) ( ( {PN_CHARS} | "." | ":" | {PLX} )*  ( {PN_CHARS} | ":" | {PLX} ) ) ?
 PN_PREFIX = {PN_CHARS_BASE} ( ({PN_CHARS} | ".")* {PN_CHARS} )?
 
 /* NIL = "(" {WS}* ")" */
 /* ECHAR = "\\" [tbnrf\\\"'] */
 
-STRING_DELIM1 = "'"
-STRING_DELIM2 = "\""
-STRING_LONG_DELIM1 = "'''"
-STRING_LONG_DELIM2 = "\"\"\""
+STRING_LITERAL_SINGLE_QUOTE_DELIM = "'"
+STRING_LITERAL_QUOTE_DELIM = "\""
+STRING_LITERAL_LONG_SINGLE_QUOTE_DELIM = "'''"
+STRING_LITERAL_LONG_QUOTE_DELIM = "\"\"\""
 
 EXPONENT = [eE] [+\-]? [0-9]+
 INTEGER = [0-9]+ 
@@ -120,7 +120,7 @@ LANGTAG = "@" [a-zA-Z]+ ( "-" [a-zA-Z0-9]+ )*
 TRUE = "true"
 FALSE = "false"
 
-%state STRING1, STRING2, STRING_LONG1, STRING_LONG2, TEMP_END
+%state STRING_LITERAL_SINGLE_QUOTE, STRING_LITERAL_QUOTE, STRING_LITERAL_LONG_SINGLE_QUOTE, STRING_LITERAL_LONG_QUOTE, TEMP_END
 
 %%
 /* keywords */
@@ -146,10 +146,10 @@ FALSE = "false"
 
   {DOT}                          { endOfStatement = true; return token(DOT); }
 
-  {STRING_DELIM1}                { yybegin(STRING1); string.setLength(0); }
-  {STRING_DELIM2}                { yybegin(STRING2); string.setLength(0); }
-  {STRING_LONG_DELIM1}           { yybegin(STRING_LONG1); string.setLength(0); }
-  {STRING_LONG_DELIM2}           { yybegin(STRING_LONG2); string.setLength(0); }
+  {STRING_LITERAL_SINGLE_QUOTE_DELIM}      { yybegin(STRING_LITERAL_SINGLE_QUOTE); string.setLength(0); }
+  {STRING_LITERAL_QUOTE_DELIM}             { yybegin(STRING_LITERAL_QUOTE); string.setLength(0); }
+  {STRING_LITERAL_LONG_SINGLE_QUOTE_DELIM} { yybegin(STRING_LITERAL_LONG_SINGLE_QUOTE); string.setLength(0); }
+  {STRING_LITERAL_LONG_QUOTE_DELIM}        { yybegin(STRING_LITERAL_LONG_QUOTE); string.setLength(0); }
 
   {LANGTAG}                      { return token(LANGTAG, yytext().substring(1)); }
 
@@ -172,12 +172,12 @@ FALSE = "false"
   {WS}                           { /* ignore */ }
 }
 
-<STRING1> "'"                    { yybegin(YYINITIAL); return token(STRING, string.toString()); }
-<STRING2> "\""                   { yybegin(YYINITIAL); return token(STRING, string.toString()); }
-<STRING_LONG1> "'''"             { yybegin(YYINITIAL); return token(STRING, string.toString()); }
-<STRING_LONG2> "\"\"\""          { yybegin(YYINITIAL); return token(STRING, string.toString()); }
+<STRING_LITERAL_SINGLE_QUOTE> "'"        { yybegin(YYINITIAL); return token(STRING, string.toString()); }
+<STRING_LITERAL_QUOTE> "\""              { yybegin(YYINITIAL); return token(STRING, string.toString()); }
+<STRING_LITERAL_LONG_SINGLE_QUOTE> "'''" { yybegin(YYINITIAL); return token(STRING, string.toString()); }
+<STRING_LITERAL_LONG_QUOTE> "\"\"\""     { yybegin(YYINITIAL); return token(STRING, string.toString()); }
 
-<STRING1,STRING2,STRING_LONG1,STRING_LONG2> {
+<STRING_LITERAL_SINGLE_QUOTE,STRING_LITERAL_QUOTE,STRING_LITERAL_LONG_SINGLE_QUOTE,STRING_LITERAL_LONG_QUOTE> {
   "\\t"                          { string.append('\t'); }
   "\\b"                          { string.append('\b'); }
   "\\n"                          { string.append('\n'); }
@@ -188,23 +188,23 @@ FALSE = "false"
   "\\'"                          { string.append('\''); }
 }
 
-<STRING1> {
+<STRING_LITERAL_SINGLE_QUOTE> {
   [^'\\\n\r]*                    { string.append( yytext() ); }
   {UCHAR}                        { string.append( unicode(yytext()) ); }
 }
 
-<STRING2> {
+<STRING_LITERAL_QUOTE> {
   [^\"\\\n\r]*                   { string.append( yytext() ); }
   {UCHAR}                        { string.append( unicode(yytext()) ); }
 }
 
-<STRING_LONG1> {
+<STRING_LITERAL_LONG_SINGLE_QUOTE> {
   ( ( "'" | "''" )? )*           { string.append( yytext() ); }
   [^'\\]*                        { string.append( yytext() ); }
   {UCHAR}                        { string.append( unicode(yytext()) ); }
 }
 
-<STRING_LONG2> {
+<STRING_LITERAL_LONG_QUOTE> {
   ( ( "\"" | "\"\"" )? )*        { string.append( yytext() ); }
   [^\"\\]*                       { string.append( yytext() ); }
   {UCHAR}                        { string.append( unicode(yytext()) ); }
