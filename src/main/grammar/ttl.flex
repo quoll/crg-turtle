@@ -86,10 +86,9 @@ UCHAR = ( "\\u" {HEX} {HEX} {HEX} {HEX} ) | ( "\\U" {HEX} {HEX} {HEX} {HEX} {HEX
 PN_CHARS_BASE = [a-zA-Z\u00c0-\u00d6\u00d8-\u00f6\u00f8-\u02ff\u0370-\u037d\u037f-\u1fff\u200c-\u200d\u2070-\u218f\u2c00-\u2fef\u3001-\ud7ff\uf900-\ufdcf\ufdf0-\ufffd\ud800\udc00-\udb7f\udfff] | {UCHAR}
 PN_CHARS_U = {PN_CHARS_BASE} | "_"
 PN_CHARS = {PN_CHARS_U} | [\-0-9\u00b7\u0300-\u036f\u203f-\u2040]
-PN_LOCAL = ( {PN_CHARS_U} | [:0-9] | {PLX} ) ( ( {PN_CHARS} | "." | ":" | {PLX} )*  ( {PN_CHARS} | ":" | {PLX} ) ) ?
+PN_LOCAL = ( {PN_CHARS_U} | [:0-9] | {PLX} ) ( ( {PN_CHARS} | [.:] | {PLX} )*  ( {PN_CHARS} | ":" | {PLX} ) ) ?
 PN_PREFIX = {PN_CHARS_BASE} ( ({PN_CHARS} | ".")* {PN_CHARS} )?
 
-/* NIL = "(" {WS}* ")" */
 /* ECHAR = "\\" [tbnrf\\\"'] */
 
 STRING_LITERAL_SINGLE_QUOTE_DELIM = "'"
@@ -98,19 +97,13 @@ STRING_LITERAL_LONG_SINGLE_QUOTE_DELIM = "'''"
 STRING_LITERAL_LONG_QUOTE_DELIM = "\"\"\""
 
 EXPONENT = [eE] [+\-]? [0-9]+
-INTEGER = [0-9]+ 
-DECIMAL = ( [0-9]+ "." [0-9]+ ) | ( "." [0-9]+ )
-DOUBLE = ( [0-9]+ "." [0-9]+ {EXPONENT} ) | ( "." ( [0-9] )+ {EXPONENT} ) | ( ( [0-9] )+ EXPONENT )
-INTEGER_POSITIVE = "+" {INTEGER}
-DECIMAL_POSITIVE = "+" {DECIMAL}
-DOUBLE_POSITIVE = "+" {DOUBLE}
-INTEGER_NEGATIVE = "-" {INTEGER}
-DECIMAL_NEGATIVE = "-" {DECIMAL}
-DOUBLE_NEGATIVE = "-" {DOUBLE}
+INTEGER = [+-]? [0-9]+ 
+DECIMAL = [+-]? [0-9]* "." [0-9]+
+DOUBLE = [+-]? ( ( [0-9]+ "." [0-9]* {EXPONENT} ) | ( "." [0-9]+ {EXPONENT} ) | ( [0-9]+ EXPONENT ) )
 
 BASE = "@base"
 PREFIX = "@prefix"
-SPARQL_PREFIX = [Pp] [Rr] [Ee] [Ff] [Ii][Xx]
+SPARQL_PREFIX = [Pp][Rr][Ee][Ff][Ii][Xx]
 SPARQL_BASE = [Bb][Aa][Ss][Ee]
 IRIREF = "<" ( [^\<\>\"\{\}\|\^`\\\x00-\x20] | {UCHAR} )* ">"
 PNAME_NS = {PN_PREFIX}? ":" 
@@ -153,15 +146,9 @@ FALSE = "false"
 
   {LANGTAG}                      { return token(LANGTAG, yytext().substring(1)); }
 
-  {INTEGER_POSITIVE}             { return token(INTEGER_LITERAL, yytext().substring(1, yylength() - 1)); }
-  {DECIMAL_POSITIVE}             { return token(DECIMAL_LITERAL, yytext().substring(1, yylength() - 1)); }
-  {DOUBLE_POSITIVE}              { return token(DOUBLE_LITERAL, yytext().substring(1, yylength() - 1)); }
   {INTEGER}                      { return token(INTEGER_LITERAL, yytext()); }
   {DECIMAL}                      { return token(DECIMAL_LITERAL, yytext()); }
   {DOUBLE}                       { return token(DOUBLE_LITERAL, yytext()); }
-  {INTEGER_NEGATIVE}             { return token(INTEGER_LITERAL, yytext()); }
-  {DECIMAL_NEGATIVE}             { return token(DECIMAL_LITERAL, yytext()); }
-  {DOUBLE_NEGATIVE}              { return token(DOUBLE_LITERAL, yytext()); }
 
   {TRUE}                         { return token(BOOL, Boolean.TRUE); }
   {FALSE}                        { return token(BOOL, Boolean.FALSE); }
