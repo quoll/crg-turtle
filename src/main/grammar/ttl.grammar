@@ -124,10 +124,12 @@ verb = iri
      :};
 
 subject = iri
-        | blank;
+        | BlankNode
+        | collection;
 
 object = iri
-       | blank
+       | BlankNode
+       | collection
        | blankNodePropertyList
        | literal;
 
@@ -145,12 +147,6 @@ literal = RDFLiteral
           // TODO hard code this to true/false
           return new Symbol(builder.new_literal(b, XSD_BOOLEAN, null));
         :};
-
-blank = BLANK_NODE.b {:
-      return b == null || b.length() == 0
-        ? new Symbol(builder.new_blank()) : new Symbol(builder.new_blank(b));
-  :}
-  | collection.c {: return c; :};
 
 blankNodePropertyList = START_BLANKNODE_LIST predicateObjectList.l END_BLANKNODE_LIST {:
       return new Symbol(clj.new_property_list_node(builder.new_blank(), l));
@@ -180,4 +176,8 @@ iri = IRIREF.i         {:
 PrefixedName = PNAME_LN.n {: return new Symbol(n.split(":")); :}
              | PNAME_NS.n {: return new Symbol(new String[] {n, ""}); :};
 
+BlankNode = BLANK_NODE.b {:
+            return b == null || b.length() == 0
+              ? new Symbol(builder.new_blank()) : new Symbol(builder.new_blank(b));
+            :};
 

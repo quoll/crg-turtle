@@ -1,6 +1,6 @@
 # Turtle
 
-A Turtle loading module for CRG (Clojure RDF Graphs). Meets the grammar for the W3C Candidate Recomendation (19 Feb, 2013).
+A Turtle loading module for CRG (Clojure RDF Graphs). Meets the grammar for the W3C Proposed Recomendation (09 Jan, 2014).
 
 Specifically aimed at parsing for Clojure. To this end, XSD strings (which includes previously
 "untyped" literals) are returned as strings, doubles and decimals are returned as doubles and
@@ -44,7 +44,7 @@ versions of Java and Clojure, but the user will need to download the sources and
 
 Add the following dependency to a leiningen project.clj:
 ```clj
-  [org.clojars.quoll/turtle "0.1.6"]
+  [org.clojars.quoll/turtle "0.2.0"]
 ```
 
 ## Usage
@@ -85,7 +85,6 @@ Probably lots.
 
 ### TODO
 
-  * Update to last publication of Turtle. Diffs listed in Appendix D: http://www.w3.org/TR/turtle/#sec-changelog
   * Provide option to convert URIs to QNames automatically (done, but not tested)
   * Provide an option to parse to URI instead of always keywords.
 
