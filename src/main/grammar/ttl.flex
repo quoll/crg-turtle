@@ -199,12 +199,14 @@ FALSE = "false"
 }
 
 <STRING_LONG1> {
-  ( ( "'" | "''" )? [^'\\] )*    { string.append( yytext() ); }
+  ( ( "'" | "''" )? )*           { string.append( yytext() ); }
+  [^'\\]*                        { string.append( yytext() ); }
   {UCHAR}                        { string.append( unicode(yytext()) ); }
 }
 
 <STRING_LONG2> {
-  ( ( "\"" | "\"\"" )? [^\"\\] )* { string.append( yytext() ); }
+  ( ( "\"" | "\"\"" )? )*        { string.append( yytext() ); }
+  [^\"\\]*                       { string.append( yytext() ); }
   {UCHAR}                        { string.append( unicode(yytext()) ); }
 }
 
