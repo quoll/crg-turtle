@@ -9,24 +9,39 @@
            [java.net URI]))
 
 (def known-prefixes
-  {"http://www.w3.org/2003/g/data-view#" "grddl"
-   "http://www.w3.org/ns/ma-ont#" "ma"
-   "http://www.w3.org/2002/07/owl#" "owl"
-   "http://www.w3.org/ns/prov#" "prov"
+  {"http://www.daml.org/2001/10/html/airport-ont#" "air"
    "http://www.w3.org/1999/02/22-rdf-syntax-ns#" "rdf"
    "http://www.w3.org/ns/rdfa#" "rdfa"
-   "http://www.w3.org/2000/01/rdf-schema#" "rdfs"
-   "http://www.w3.org/2007/rif#" "rif"
-   "http://www.w3.org/ns/r2rml#" "rr"
-   "http://www.w3.org/ns/sparql-service-description#" "sd"
+   "http://rdfs.org/sioc/ns#" "sioc"
+   "http://www.w3.org/2003/01/geo/wgs84_pos#" "pos"
+   "http://purl.org/ontology/bibo/" "bibo"
+   "http://www.w3.org/ns/prov#" "prov"
+   "http://xmlns.com/wordnet/1.6/" "wn"
+   "http://usefulinc.com/ns/doap#" "doap"
    "http://www.w3.org/2004/02/skos/core#" "skos"
+   "http://www.w3.org/2001/XMLSchema#" "xmls"
+   "http://www.w3.org/ns/r2rml#" "rr"
+   "http://www.openarchives.org/ore/terms/" "ore"
+   "http://www.w3.org/2007/rif#" "rif"
+   "http://xmlns.com/foaf/0.1/" "foaf"
+   "http://purl.org/goodrelations/v1#" "gr"
+   "http://purl.org/dc/elements/1.1/" "dc"
+   "http://www.w3.org/2002/07/owl#" "owl"
+   "http://creativecommons.org/ns#" "cc"
+   "http://www.w3.org/ns/sparql-service-description#" "sd"
+   "http://rdfs.org/ns/void#" "void"
+   "http://purl.org/vocab/bio/0.1/" "bio"
+   "http://www.w3.org/2007/05/powder-s#" "wdrs"
+   "http://purl.org/dc/terms/" "dct"
+   "http://www.w3.org/ns/ma-ont#" "ma"
    "http://www.w3.org/2008/05/skos-xl#" "skosxl"
    "http://www.w3.org/2007/05/powder#" "wdr"
-   "http://rdfs.org/ns/void#" "void"
-   "http://www.w3.org/2007/05/powder-s#" "wdrs"
    "http://www.w3.org/1999/xhtml/vocab#" "xhv"
-   "http://www.w3.org/XML/1998/namespace" "xml"
-   "http://www.w3.org/2001/XMLSchema#" "xsd"})
+   "http://www.w3.org/2000/01/rdf-schema#" "rdfs"
+   "http://www.geonames.org/ontology#" "gn"
+   "http://www.w3.org/2003/g/data-view#" "grddl"
+   "http://www.w3.org/2006/vcard/ns#" "vcard"
+   "http://www.w3.org/XML/1998/namespace" "xml"})
 
 (defn as-uri [u]
   (if (keyword? u)
@@ -124,6 +139,7 @@
 (defn create-parser
   "Create a parser for a stream"
   ([^java.io.InputStream in] (create-parser in {} generate-prefix))
+  ([^java.io.InputStream in ^java.util.Map known-ns] (create-parser in known-ns generate-prefix))
   ([^java.io.InputStream in ^java.util.Map known-ns ^clojure.lang.IFn pfx-gen]
    (let [lexer (TtlLexer/newLexer in)
          parser (Parser.
