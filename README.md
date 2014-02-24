@@ -44,7 +44,7 @@ versions of Java and Clojure, but the user will need to download the sources and
 
 Add the following dependency to a leiningen project.clj:
 ```clj
-  [org.clojars.quoll/turtle "0.2.0"]
+  [org.clojars.quoll/turtle "0.2.1"]
 ```
 
 ## Usage
