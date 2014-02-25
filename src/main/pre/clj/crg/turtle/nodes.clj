@@ -1,5 +1,6 @@
 (ns crg.turtle.nodes
-  (:import [java.util List Map]))
+  (:import [java.util List Map]
+           [beaver Symbol]))
 
 (defprotocol NodeBuilder
   (new-blank [builder]
@@ -70,9 +71,10 @@
       (loop [cs c, lastn nil, triples []]
         (if-not (seq cs)
           (concat triples [[lastn :rdf/rest :rdf/nil]])
-          (let [n (if lastn (.new-blank builder) head)
+          (let [n (if lastn (new-blank builder) head)
                 joiner (if lastn [[lastn :rdf/next n]] [])
-                cn (.value (first cs))]
+                ^Symbol first-symbol (first cs)
+                cn (.value first-symbol)]
             (recur
               (rest cs)
               n
@@ -102,7 +104,7 @@
   Nodes
   (new-collection-node [_ builder c]
     (if (seq c)
-      (->CollectionNode c (.new-blank builder))
+      (->CollectionNode c (new-blank builder))
       (->CollectionNode c :rdf/nil)))
 
   (new-property-list-node [_ node po-list] (->PropertyListNode node po-list))
