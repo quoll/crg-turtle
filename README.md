@@ -44,7 +44,7 @@ versions of Java and Clojure, but the user will need to download the sources and
 
 Add the following dependency to a leiningen project.clj:
 ```clj
-  [org.clojars.quoll/turtle "0.2.1"]
+  [org.clojars.quoll/turtle "0.2.2"]
 ```
 
 ## Usage
@@ -85,8 +85,8 @@ Probably lots.
 
 ### TODO
 
-  * Provide option to convert URIs to QNames automatically (done, but not tested)
   * Provide an option to parse to URI instead of always keywords.
+  * Rework to use core.async. This will invert to be more like the original Java code, which is still much faster.
 
 ## Acknowledgements
 
