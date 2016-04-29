@@ -95,6 +95,6 @@ Special thanks to [Daniel Spiewak](https://github.com/djspiewak "@djspiewak") fo
 
 ## License
 
-Copyright © 2013 Paul Gearon
+Copyright © 2013 Paula Gearon
 
 Distributed under the Eclipse Public License, the same as Clojure.
